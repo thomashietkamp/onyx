@@ -10361,6 +10361,23 @@
       "search": "Plugins suchen",
       "loadFailed": "Die Plugins konnten nicht geladen werden.",
       "manageIntegrations": "Integrationen verwalten",
+      "exportOnyxPlugin": "Onyx-Plugin exportieren",
+      "export": {
+        "title": "Onyx-Plugin exportieren",
+        "description": "Verbinden Sie Claude und ChatGPT mit dieser Onyx-Bereitstellung. Jede Person meldet sich mit dem eigenen Onyx-Konto an.",
+        "downloadFailed": "Das Plugin konnte nicht heruntergeladen werden.",
+        "claude": {
+          "title": "Claude",
+          "description": "Laden Sie das Plugin herunter und laden Sie es in Claude hoch. Die Datei enthält die Adresse dieser Bereitstellung.",
+          "download": "Herunterladen",
+          "guide": "Anleitung für Claude"
+        },
+        "chatgpt": {
+          "title": "ChatGPT",
+          "description": "ChatGPT verwendet die Plugin-Datei nicht. Fügen Sie Onyx als benutzerdefinierten MCP-Server hinzu.",
+          "guide": "Anleitung für ChatGPT"
+        }
+      },
       "columns": {
         "name": "Plugin",
         "library": "Bibliothek",

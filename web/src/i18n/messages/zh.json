@@ -10361,6 +10361,23 @@
       "search": "搜索插件",
       "loadFailed": "无法加载插件。",
       "manageIntegrations": "管理集成",
+      "exportOnyxPlugin": "导出 Onyx 插件",
+      "export": {
+        "title": "导出 Onyx 插件",
+        "description": "将 Claude 和 ChatGPT 连接到此 Onyx 部署。每个人使用自己的 Onyx 账户登录。",
+        "downloadFailed": "无法下载插件。",
+        "claude": {
+          "title": "Claude",
+          "description": "下载插件并上传到 Claude。文件中包含此部署的地址。",
+          "download": "下载",
+          "guide": "Claude 指南"
+        },
+        "chatgpt": {
+          "title": "ChatGPT",
+          "description": "ChatGPT 不使用插件文件。请将 Onyx 添加为自定义 MCP 服务器。",
+          "guide": "ChatGPT 指南"
+        }
+      },
       "columns": {
         "name": "插件",
         "library": "库",

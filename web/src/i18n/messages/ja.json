@@ -10361,6 +10361,23 @@
       "search": "プラグインを検索",
       "loadFailed": "プラグインを読み込めませんでした。",
       "manageIntegrations": "連携を管理",
+      "exportOnyxPlugin": "Onyx プラグインをエクスポート",
+      "export": {
+        "title": "Onyx プラグインをエクスポート",
+        "description": "Claude と ChatGPT をこの Onyx デプロイに接続します。各ユーザーは自分の Onyx アカウントでサインインします。",
+        "downloadFailed": "プラグインをダウンロードできませんでした。",
+        "claude": {
+          "title": "Claude",
+          "description": "プラグインをダウンロードして Claude にアップロードします。ファイルにはこのデプロイのアドレスが含まれています。",
+          "download": "ダウンロード",
+          "guide": "Claude ガイド"
+        },
+        "chatgpt": {
+          "title": "ChatGPT",
+          "description": "ChatGPT はプラグインファイルを使用しません。Onyx をカスタム MCP サーバーとして追加します。",
+          "guide": "ChatGPT ガイド"
+        }
+      },
       "columns": {
         "name": "プラグイン",
         "library": "ライブラリ",

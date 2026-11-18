@@ -7,6 +7,7 @@ import {
 } from "@tests/setup/test-utils";
 import AdminPluginsPage from "@/sections/integrations/AdminPluginsPage";
 import messages from "@/i18n/messages/en.json";
+import { downloadFile } from "@/lib/download";
 import {
   makeIntegration,
   mockFetch,
@@ -17,6 +18,7 @@ const copy = messages.admin.plugins;
 const policyCopy = messages.skills.installationPolicy;
 
 let mockGlobalHolder = true;
+let mockOAuthProvider = false;
 
 jest.mock("next/navigation", () => ({
   ...jest.requireActual<typeof import("@tests/setup/mocks/nextNavigation")>(
@@ -31,6 +33,11 @@ jest.mock("@/lib/permissions/hooks", () => ({
   }),
 }));
 
+jest.mock("@/lib/settings/hooks", () => ({
+  useSettings: () => ({ oauth_provider_enabled: mockOAuthProvider }),
+}));
+jest.mock("@/lib/download", () => ({ downloadFile: jest.fn() }));
+
 const workspace = {
   plugin_id: "plugin-work",
   plugin_name: "Workspace tools",
@@ -41,6 +48,7 @@ const workspace = {
 
 beforeEach(() => {
   mockGlobalHolder = true;
+  mockOAuthProvider = false;
   window.history.replaceState(null, "", "/admin/plugins");
 });
 afterEach(() => jest.restoreAllMocks());
@@ -178,4 +186,56 @@ test("a scoped manager sees the install setting but cannot change it", async () 
       name: "Install setting of Workspace tools",
     })
   ).toBeDisabled();
+});
+
+test("exports the Onyx plugin and links the Claude and ChatGPT guides", async () => {
+  mockOAuthProvider = true;
+  mockFetch({
+    "/api/admin/integrations": [],
+    "/api/admin/plugins/onyx-plugin/export": new Response("zip"),
+  });
+  const user = setupUser();
+  render(<AdminPluginsPage />);
+
+  await user.click(
+    await screen.findByRole("button", { name: copy.exportOnyxPlugin })
+  );
+  const dialog = within(await screen.findByRole("dialog"));
+  expect(dialog.getByText(copy.export.title)).toBeInTheDocument();
+  expect(
+    dialog.getByRole("link", { name: new RegExp(copy.export.claude.guide) })
+  ).toHaveAttribute(
+    "href",
+    "https://docs.onyx.app/overview/onyx_anywhere/mcp_server/claude"
+  );
+  expect(
+    dialog.getByRole("link", { name: new RegExp(copy.export.chatgpt.guide) })
+  ).toHaveAttribute(
+    "href",
+    "https://docs.onyx.app/overview/onyx_anywhere/mcp_server/chatgpt"
+  );
+
+  await user.click(
+    dialog.getByRole("button", { name: copy.export.claude.download })
+  );
+  await waitFor(() =>
+    expect(downloadFile).toHaveBeenCalledWith(
+      "onyx-plugin.zip",
+      expect.objectContaining({ content: expect.anything() })
+    )
+  );
+});
+
+test.each([
+  { name: "without the Onyx OAuth provider", oauth: false, global: true },
+  { name: "to a scoped manager", oauth: true, global: false },
+])("offers no export $name", async ({ oauth, global }) => {
+  mockOAuthProvider = oauth;
+  mockGlobalHolder = global;
+  mockFetch({ "/api/admin/integrations": [] });
+  render(<AdminPluginsPage />);
+  expect(await screen.findByText(copy.empty.title)).toBeInTheDocument();
+  expect(
+    screen.queryByRole("button", { name: copy.exportOnyxPlugin })
+  ).not.toBeInTheDocument();
 });

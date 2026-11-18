@@ -41,6 +41,16 @@
   search tool is still worth a call, and with strict retrieval nudges one when
   a question turn ends on the prefetch alone.
   `extensions/agent-plugin/README.md` is the user-facing description.
+- **An admin exports that plugin for claude.ai.** A global action manager
+  selects Export Onyx plugin on Admin > Plugins
+  (`sections/integrations/ExportOnyxPluginModal.tsx`) and downloads a zip from
+  `GET /admin/plugins/onyx-plugin/export`. The zip is the Claude form of the
+  plugin with the deployment's MCP URL fixed in `.mcp.json`, no token header
+  and no URL option, because claude.ai chat takes no install options. The user
+  uploads it in Claude and signs in through OAuth. The button shows only with
+  the Onyx OAuth provider on. ChatGPT gets a link to the custom MCP server
+  guide instead: ChatGPT on the web marks a plugin that declares an MCP server
+  as Desktop only.
 - **When it fails**, a bad or expired token gets a 401. A PAT or API key
   gets a 401 for every rejection, including an API server outage. An OAuth
   token that the API server refuses for scope gets a 403 `insufficient_scope`
@@ -195,6 +205,16 @@ process. `/.well-known/oauth-authorization-server` goes to the API server
 11. `ssrf-env-false-lead` **`MCP_SERVER_ALLOW_PRIVATE_NETWORK` and
     `MCP_SERVER_ALLOW_LOOPBACK` are not settings of this server.** They seed
     the SSRF level for the MCP client in [[mcp-and-custom-tools]].
+12. `plugin-bundle-copy` **The plugin export zips a copy of the plugin.** The
+    backend image is built from `backend/` alone, so
+    `backend/onyx/server/features/onyx_plugin/bundle/` copies the Claude files
+    of `extensions/agent-plugin/`. `tools/agent_plugin/sync_bundle.py` writes
+    the copy, and the `agent-plugin-bundle-drift` pre-commit hook fails on a
+    difference. `backend/onyx/server/features/onyx_plugin/export.py` edits
+    the copy for one deployment: it
+    reads the manifest option names, the `onyx` server in `.mcp.json` and the
+    hook commands, so a rename in the plugin needs the same rename there. A
+    new plugin file needs an entry in the script's `BUNDLE_FILES`.
 
 ---
 

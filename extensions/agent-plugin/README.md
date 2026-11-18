@@ -34,6 +34,14 @@ To develop the plugin from a checkout, start Claude Code with `--plugin-dir exte
 
 Organizations can require the plugin on every machine through managed settings. See [Manage plugins for your organization](https://code.claude.com/docs/en/plugins/org).
 
+## Export from Onyx
+
+An Onyx admin can download this plugin with the deployment's address set: **Admin Panel → Plugins → Export Onyx plugin**. That zip is for a host that takes no install options, such as claude.ai chat. The MCP server in it has a fixed URL and signs in through OAuth, and the token option is only for the prefetch.
+
+The backend zips its own copy of the Claude files, in `backend/onyx/server/features/onyx_plugin/bundle`, because its image is built from `backend/` alone. After you change a Claude file here, run `python3 tools/agent_plugin/sync_bundle.py`. The `agent-plugin-bundle-drift` pre-commit hook fails on a difference. A new file also needs an entry in `BUNDLE_FILES` in that script.
+
+ChatGPT on the web marks a plugin that declares an MCP server as Desktop only, so the export has no ChatGPT form. Add Onyx there as a custom MCP server.
+
 ## Codex
 
 The same directory is a Codex plugin: `.codex-plugin/plugin.json` is the manifest Codex reads, `hooks/codex.json` holds the Codex hook definitions, and the repo marketplace at `.agents/plugins/marketplace.json` lists it. The manifest uses Codex's own format rather than the portable Agent Plugins one, because Codex loads bundled hooks only from its own format. Codex cannot take a per-user server URL from a plugin, so the plugin bundles no MCP server there. Add the Onyx server yourself, named `onyx`, then install the plugin:

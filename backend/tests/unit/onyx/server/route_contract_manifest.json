@@ -113,6 +113,7 @@
   "GET /admin/mcp/servers/{server_id}": "manage:actions +scope",
   "GET /admin/oauth-test/claims": "admin",
   "GET /admin/persona": "read:agents +scope",
+  "GET /admin/plugins/onyx-plugin/export": "manage:actions",
   "GET /admin/query-history/download": "read:query_history",
   "GET /admin/query-history/export-status": "read:query_history",
   "GET /admin/query-history/list": "read:query_history",

@@ -10361,6 +10361,23 @@
       "search": "البحث في الإضافات",
       "loadFailed": "تعذّر تحميل الإضافات.",
       "manageIntegrations": "إدارة التكاملات",
+      "exportOnyxPlugin": "تصدير إضافة Onyx",
+      "export": {
+        "title": "تصدير إضافة Onyx",
+        "description": "اربط Claude و ChatGPT بهذا النشر من Onyx. يسجّل كل شخص الدخول بحسابه الخاص في Onyx.",
+        "downloadFailed": "تعذّر تنزيل الإضافة.",
+        "claude": {
+          "title": "Claude",
+          "description": "نزّل الإضافة وارفعها إلى Claude. يحتوي الملف على عنوان هذا النشر.",
+          "download": "تنزيل",
+          "guide": "دليل Claude"
+        },
+        "chatgpt": {
+          "title": "ChatGPT",
+          "description": "لا يستخدم ChatGPT ملف الإضافة. أضف Onyx كخادم MCP مخصص.",
+          "guide": "دليل ChatGPT"
+        }
+      },
       "columns": {
         "name": "الإضافة",
         "library": "المكتبة",

@@ -331,6 +331,21 @@ repos:
             (cli|tools/ods|tools/ods-audit)/pyproject\.toml
             |tools/requirements/build-constraints\.in
           )$
+      # The backend image is built from backend/ alone, so the plugin export
+      # zips a copy of the plugin files instead of extensions/agent-plugin.
+      - id: agent-plugin-bundle-drift
+        name: agent plugin bundle drift
+        description: "Check the backend's plugin bundle matches extensions/agent-plugin"
+        language: system
+        entry: python3 tools/agent_plugin/sync_bundle.py --check
+        pass_filenames: false
+        stages: [pre-commit]
+        files: >-
+          (?x)^(
+            extensions/agent-plugin/
+            |backend/onyx/server/features/onyx_plugin/bundle/
+            |tools/agent_plugin/
+          )
       - id: migration-determinism
         name: migration rows are deterministic
         description: "Fail a new tenant-chain revision that seeds rows with run-dependent values"

@@ -30,12 +30,14 @@ import {
   pluginsFromIntegrations,
 } from "@/lib/integrations/utils";
 import { usePermissionAuthority } from "@/lib/permissions/hooks";
+import { useSettings } from "@/lib/settings/hooks";
 import {
   useInstallationPolicyCopy,
   usePolicyOptions,
 } from "@/lib/skills/hooks";
 import { INSTALLATION_POLICIES } from "@/lib/skills/installationPolicy";
 import { Permission } from "@/lib/types";
+import ExportOnyxPluginModal from "@/sections/integrations/ExportOnyxPluginModal";
 
 export default function AdminPluginsPage() {
   const t = useTranslations("admin.plugins");
@@ -45,6 +47,11 @@ export default function AdminPluginsPage() {
   const { isGlobalHolder } = usePermissionAuthority(Permission.MANAGE_ACTIONS);
   const policyCopy = useInstallationPolicyCopy();
   const policyOptions = usePolicyOptions();
+  // The exported plugin signs in through the Onyx OAuth provider, and the
+  // export route admits only an organization-wide action manager.
+  const oauthProviderEnabled = useSettings().oauth_provider_enabled;
+  const canExportOnyxPlugin = isGlobalHolder && oauthProviderEnabled;
+  const [exportOpen, setExportOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [savingPluginIds, setSavingPluginIds] = useState<ReadonlySet<string>>(
     new Set()
@@ -191,6 +198,15 @@ export default function AdminPluginsPage() {
         description={t("description")}
         stackActionsOnMobile
         actions={[
+          canExportOnyxPlugin && (
+            <Button
+              key="export"
+              prominence="secondary"
+              onClick={() => setExportOpen(true)}
+            >
+              {t("exportOnyxPlugin")}
+            </Button>
+          ),
           <Button
             key="integrations"
             prominence="secondary"
@@ -226,6 +242,9 @@ export default function AdminPluginsPage() {
           }
         />
       </SettingsLayouts.Body>
+      {exportOpen && (
+        <ExportOnyxPluginModal onClose={() => setExportOpen(false)} />
+      )}
     </SettingsLayouts.Root>
   );
 }

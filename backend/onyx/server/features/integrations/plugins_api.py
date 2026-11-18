@@ -1,10 +1,11 @@
 """Routes of a plugin that holds only integrations: the plugins an agent
 runs for the user, the user's on/off switch, the shares and publishing of a private plugin, and the install
-setting of an Organization library plugin."""
+setting of an Organization library plugin. One admin route exports the Onyx plugin
+for Claude."""
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.orm import Session
 
 from onyx.auth.permissions import require_permission, token_allows
@@ -21,6 +22,7 @@ from onyx.integrations.plugin_settings import (
     share_plugin__no_commit,
 )
 from onyx.integrations.service import reload_craft_sessions
+from onyx.oauth_provider.config import require_oauth_provider_settings
 from onyx.server.features.integrations.models import (
     MemberPluginState,
     PluginAccessUpdate,
@@ -29,11 +31,14 @@ from onyx.server.features.integrations.models import (
     PluginInstallationPolicyUpdate,
     PluginPublishResponse,
 )
+from onyx.server.features.onyx_plugin.export import build_plugin_bundle
 
 router = APIRouter(prefix="/plugins")
 admin_router = APIRouter(prefix="/admin/plugins")
 
 _member = require_permission(Permission.BASIC_ACCESS)
+
+ONYX_PLUGIN_FILENAME = "onyx-plugin.zip"
 
 
 @router.get("/agents/{persona_id}")
@@ -111,6 +116,21 @@ def publish_plugin(
     db_session.commit()
     reload_craft_sessions(affected, db_session)
     return PluginPublishResponse(plugin_id=plugin_id, name=name)
+
+
+@admin_router.get("/onyx-plugin/export")
+def export_onyx_plugin(
+    _: User = Depends(require_permission(Permission.MANAGE_ACTIONS)),
+) -> Response:
+    # The exported plugin signs in through the OAuth provider, so it needs one.
+    settings = require_oauth_provider_settings()
+    return Response(
+        content=build_plugin_bundle(settings),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{ONYX_PLUGIN_FILENAME}"'
+        },
+    )
 
 
 @admin_router.put("/{plugin_id}/installation-policy")

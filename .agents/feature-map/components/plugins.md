@@ -24,7 +24,8 @@ Group or user restriction needs EE.
   built from the `plugins` refs of that list
   (`sections/integrations/AdminPluginsPage.tsx`). Each Organization library
   plugin has an install setting select, which a global action manager changes
-  through `PUT /admin/plugins/{id}/installation-policy`. The detail page
+  through `PUT /admin/plugins/{id}/installation-policy`. The header also
+  holds Export Onyx plugin, which belongs to [[mcp-server]]. The detail page
   `/admin/integrations/[id]` has Overview (name, description, switch),
   Configuration (sign-in settings, the preset account settings and the
   organization connection) and Actions ("Default for new actions", then
