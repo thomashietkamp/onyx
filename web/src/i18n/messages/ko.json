@@ -10365,16 +10365,16 @@
       "export": {
         "title": "Onyx 플러그인 내보내기",
         "description": "Claude와 ChatGPT를 이 Onyx 배포에 연결합니다. 각 사용자는 자신의 Onyx 계정으로 로그인합니다.",
+        "download": "Claude용 다운로드",
         "downloadFailed": "플러그인을 다운로드할 수 없습니다.",
         "claude": {
           "title": "Claude",
           "description": "플러그인을 다운로드하여 Claude에 업로드합니다. Onyx MCP 서버가 포함되어 있습니다.",
-          "download": "다운로드",
           "guide": "Claude 가이드"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "이 플러그인 파일로는 ChatGPT를 연결할 수 없습니다. 가이드에 따라 Onyx를 사용자 지정 MCP 서버로 추가합니다.",
+          "description": "Onyx를 사용자 지정 MCP 서버로 추가합니다. ChatGPT에는 플러그인 파일이 필요하지 않습니다.",
           "guide": "ChatGPT 가이드"
         }
       },

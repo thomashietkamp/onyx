@@ -10365,16 +10365,16 @@
       "export": {
         "title": "Exportar plugin do Onyx",
         "description": "Conecte o Claude e o ChatGPT a esta implantação do Onyx. Cada pessoa entra com a própria conta do Onyx.",
+        "download": "Baixar para o Claude",
         "downloadFailed": "Não foi possível baixar o plugin.",
         "claude": {
           "title": "Claude",
           "description": "Baixe o plugin e envie-o para o Claude. O servidor MCP do Onyx já está incluído.",
-          "download": "Baixar",
           "guide": "Guia do Claude"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "Este arquivo de plugin não conecta o ChatGPT. Siga o guia para adicionar o Onyx como um servidor MCP personalizado.",
+          "description": "Adicione o Onyx como um servidor MCP personalizado. O ChatGPT não precisa de um arquivo de plugin.",
           "guide": "Guia do ChatGPT"
         }
       },

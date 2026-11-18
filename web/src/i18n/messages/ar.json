@@ -10365,16 +10365,16 @@
       "export": {
         "title": "تصدير إضافة Onyx",
         "description": "اربط Claude و ChatGPT بهذا النشر من Onyx. يسجّل كل شخص الدخول بحسابه الخاص في Onyx.",
+        "download": "تنزيل لـ Claude",
         "downloadFailed": "تعذّر تنزيل الإضافة.",
         "claude": {
           "title": "Claude",
           "description": "نزّل الإضافة وارفعها إلى Claude. خادم MCP الخاص بـ Onyx مضمّن فيها.",
-          "download": "تنزيل",
           "guide": "دليل Claude"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ملف الإضافة هذا لا يربط ChatGPT. اتبع الدليل لإضافة Onyx كخادم MCP مخصص.",
+          "description": "أضف Onyx كخادم MCP مخصص. لا يحتاج ChatGPT إلى ملف إضافة.",
           "guide": "دليل ChatGPT"
         }
       },

@@ -10365,16 +10365,16 @@
       "export": {
         "title": "Exporter l’extension Onyx",
         "description": "Connectez Claude et ChatGPT à ce déploiement Onyx. Chaque personne se connecte avec son propre compte Onyx.",
+        "download": "Télécharger pour Claude",
         "downloadFailed": "Impossible de télécharger l’extension.",
         "claude": {
           "title": "Claude",
           "description": "Téléchargez l’extension et importez-la dans Claude. Le serveur MCP Onyx est inclus.",
-          "download": "Télécharger",
           "guide": "Guide Claude"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "Ce fichier d’extension ne connecte pas ChatGPT. Suivez le guide pour ajouter Onyx comme serveur MCP personnalisé.",
+          "description": "Ajoutez Onyx comme serveur MCP personnalisé. ChatGPT n’a pas besoin de fichier d’extension.",
           "guide": "Guide ChatGPT"
         }
       },

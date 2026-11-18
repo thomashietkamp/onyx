@@ -215,9 +215,7 @@ test("exports the Onyx plugin and links the Claude and ChatGPT guides", async ()
     "https://docs.onyx.app/overview/onyx_anywhere/mcp_server/chatgpt#chatgpt-on-the-web"
   );
 
-  await user.click(
-    dialog.getByRole("button", { name: copy.export.claude.download })
-  );
+  await user.click(dialog.getByRole("button", { name: copy.export.download }));
   await waitFor(() =>
     expect(downloadFile).toHaveBeenCalledWith(
       "onyx-plugin.zip",

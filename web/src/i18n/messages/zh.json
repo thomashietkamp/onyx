@@ -10365,16 +10365,16 @@
       "export": {
         "title": "导出 Onyx 插件",
         "description": "将 Claude 和 ChatGPT 连接到此 Onyx 部署。每个人使用自己的 Onyx 账户登录。",
+        "download": "下载 Claude 插件",
         "downloadFailed": "无法下载插件。",
         "claude": {
           "title": "Claude",
           "description": "下载插件并上传到 Claude。插件已内置 Onyx MCP 服务器。",
-          "download": "下载",
           "guide": "Claude 指南"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "此插件文件无法连接 ChatGPT。请按照指南将 Onyx 添加为自定义 MCP 服务器。",
+          "description": "将 Onyx 添加为自定义 MCP 服务器。ChatGPT 不需要插件文件。",
           "guide": "ChatGPT 指南"
         }
       },
