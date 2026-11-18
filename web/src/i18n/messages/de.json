@@ -10368,13 +10368,13 @@
         "downloadFailed": "Das Plugin konnte nicht heruntergeladen werden.",
         "claude": {
           "title": "Claude",
-          "description": "Laden Sie das Plugin herunter und laden Sie es in Claude hoch. Die Datei enthält die Adresse dieser Bereitstellung.",
+          "description": "Laden Sie das Plugin herunter und laden Sie es in Claude hoch. Der Onyx-MCP-Server ist enthalten.",
           "download": "Herunterladen",
           "guide": "Anleitung für Claude"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ChatGPT verwendet die Plugin-Datei nicht. Fügen Sie Onyx als benutzerdefinierten MCP-Server hinzu.",
+          "description": "ChatGPT kann den MCP-Server nicht aus einer Plugin-Datei übernehmen. Folgen Sie der Anleitung, um Onyx als benutzerdefinierten MCP-Server hinzuzufügen.",
           "guide": "Anleitung für ChatGPT"
         }
       },

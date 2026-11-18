@@ -18,7 +18,7 @@ const copy = messages.admin.plugins;
 const policyCopy = messages.skills.installationPolicy;
 
 let mockGlobalHolder = true;
-let mockOAuthProvider = false;
+let mockExportEnabled = false;
 
 jest.mock("next/navigation", () => ({
   ...jest.requireActual<typeof import("@tests/setup/mocks/nextNavigation")>(
@@ -34,7 +34,7 @@ jest.mock("@/lib/permissions/hooks", () => ({
 }));
 
 jest.mock("@/lib/settings/hooks", () => ({
-  useSettings: () => ({ oauth_provider_enabled: mockOAuthProvider }),
+  useSettings: () => ({ onyx_plugin_export_enabled: mockExportEnabled }),
 }));
 jest.mock("@/lib/download", () => ({ downloadFile: jest.fn() }));
 
@@ -48,7 +48,7 @@ const workspace = {
 
 beforeEach(() => {
   mockGlobalHolder = true;
-  mockOAuthProvider = false;
+  mockExportEnabled = false;
   window.history.replaceState(null, "", "/admin/plugins");
 });
 afterEach(() => jest.restoreAllMocks());
@@ -189,7 +189,7 @@ test("a scoped manager sees the install setting but cannot change it", async () 
 });
 
 test("exports the Onyx plugin and links the Claude and ChatGPT guides", async () => {
-  mockOAuthProvider = true;
+  mockExportEnabled = true;
   mockFetch({
     "/api/admin/integrations": [],
     "/api/admin/plugins/onyx-plugin/export": new Response("zip"),
@@ -206,13 +206,13 @@ test("exports the Onyx plugin and links the Claude and ChatGPT guides", async ()
     dialog.getByRole("link", { name: new RegExp(copy.export.claude.guide) })
   ).toHaveAttribute(
     "href",
-    "https://docs.onyx.app/overview/onyx_anywhere/mcp_server/claude"
+    "https://docs.onyx.app/overview/onyx_anywhere/mcp_server/claude#upload-the-onyx-plugin"
   );
   expect(
     dialog.getByRole("link", { name: new RegExp(copy.export.chatgpt.guide) })
   ).toHaveAttribute(
     "href",
-    "https://docs.onyx.app/overview/onyx_anywhere/mcp_server/chatgpt"
+    "https://docs.onyx.app/overview/onyx_anywhere/mcp_server/chatgpt#chatgpt-on-the-web"
   );
 
   await user.click(
@@ -227,10 +227,10 @@ test("exports the Onyx plugin and links the Claude and ChatGPT guides", async ()
 });
 
 test.each([
-  { name: "without the Onyx OAuth provider", oauth: false, global: true },
-  { name: "to a scoped manager", oauth: true, global: false },
-])("offers no export $name", async ({ oauth, global }) => {
-  mockOAuthProvider = oauth;
+  { name: "when the deployment cannot export", enabled: false, global: true },
+  { name: "to a scoped manager", enabled: true, global: false },
+])("offers no export $name", async ({ enabled, global }) => {
+  mockExportEnabled = enabled;
   mockGlobalHolder = global;
   mockFetch({ "/api/admin/integrations": [] });
   render(<AdminPluginsPage />);

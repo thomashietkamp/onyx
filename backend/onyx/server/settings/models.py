@@ -162,6 +162,7 @@ class Settings(BaseModel):
 
 class UserSettings(Settings):
     oauth_provider_enabled: bool = False
+    onyx_plugin_export_enabled: bool = False
     notifications: list[NotificationResponse]
     needs_reindexing: bool
     tenant_id: str = POSTGRES_DEFAULT_SCHEMA

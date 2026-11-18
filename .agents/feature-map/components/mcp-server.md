@@ -48,7 +48,7 @@
   plugin with the deployment's MCP URL fixed in `.mcp.json`, no token header
   and no URL option, because claude.ai chat takes no install options. The user
   uploads it in Claude and signs in through OAuth. The button shows only with
-  the Onyx OAuth provider on. ChatGPT gets a link to the custom MCP server
+  the Onyx OAuth provider on and the plugin files in the image. ChatGPT gets a link to the custom MCP server
   guide instead: ChatGPT on the web marks a plugin that declares an MCP server
   as Desktop only.
 - **When it fails**, a bad or expired token gets a 401. A PAT or API key
@@ -205,16 +205,17 @@ process. `/.well-known/oauth-authorization-server` goes to the API server
 11. `ssrf-env-false-lead` **`MCP_SERVER_ALLOW_PRIVATE_NETWORK` and
     `MCP_SERVER_ALLOW_LOOPBACK` are not settings of this server.** They seed
     the SSRF level for the MCP client in [[mcp-and-custom-tools]].
-12. `plugin-bundle-copy` **The plugin export zips a copy of the plugin.** The
-    backend image is built from `backend/` alone, so
-    `backend/onyx/server/features/onyx_plugin/bundle/` copies the Claude files
-    of `extensions/agent-plugin/`. `tools/agent_plugin/sync_bundle.py` writes
-    the copy, and the `agent-plugin-bundle-drift` pre-commit hook fails on a
-    difference. `backend/onyx/server/features/onyx_plugin/export.py` edits
-    the copy for one deployment: it
-    reads the manifest option names, the `onyx` server in `.mcp.json` and the
-    hook commands, so a rename in the plugin needs the same rename there. A
-    new plugin file needs an entry in the script's `BUNDLE_FILES`.
+12. `plugin-build-context` **The plugin export reads `extensions/agent-plugin/`,
+    which is outside the backend build context.** `backend/Dockerfile` copies
+    it to `/extensions/agent-plugin` from the `agent-plugin` named build
+    context, which `.github/workflows/deployment.yml` and the Compose files
+    pass. A build without
+    that context still succeeds: the stage is empty, `PLUGIN_DIR` in
+    `backend/onyx/server/features/onyx_plugin/export.py` is `None`, the route
+    answers `NOT_FOUND`, and the `onyx_plugin_export_enabled` setting hides the
+    button. The export edits the manifest option names, the `onyx` server in
+    `.mcp.json` and the hook commands, so a rename in the plugin needs the same
+    rename there.
 
 ---
 

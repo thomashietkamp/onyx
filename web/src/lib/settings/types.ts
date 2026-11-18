@@ -93,6 +93,7 @@ export interface Settings {
   llm_gateway_enabled?: boolean;
 
   oauth_provider_enabled?: boolean;
+  onyx_plugin_export_enabled?: boolean;
 
   // Workspace-wide instructions injected into every Craft agent's system
   // prompt (AGENTS.md).

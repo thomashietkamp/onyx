@@ -10368,13 +10368,13 @@
         "downloadFailed": "无法下载插件。",
         "claude": {
           "title": "Claude",
-          "description": "下载插件并上传到 Claude。文件中包含此部署的地址。",
+          "description": "下载插件并上传到 Claude。插件已内置 Onyx MCP 服务器。",
           "download": "下载",
           "guide": "Claude 指南"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ChatGPT 不使用插件文件。请将 Onyx 添加为自定义 MCP 服务器。",
+          "description": "ChatGPT 无法从插件文件中读取 MCP 服务器。请按照指南将 Onyx 添加为自定义 MCP 服务器。",
           "guide": "ChatGPT 指南"
         }
       },

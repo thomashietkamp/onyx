@@ -52,7 +52,7 @@ export default function ExportOnyxPluginModal({
               rightChildren={
                 <Section flexDirection="row" gap={3} width="fit">
                   <LinkButton
-                    href={`${MCP_SERVER_DOCS_URL}/claude`}
+                    href={`${MCP_SERVER_DOCS_URL}/claude#upload-the-onyx-plugin`}
                     target="_blank"
                   >
                     {t("claude.guide")}
@@ -77,7 +77,7 @@ export default function ExportOnyxPluginModal({
               center
               rightChildren={
                 <LinkButton
-                  href={`${MCP_SERVER_DOCS_URL}/chatgpt`}
+                  href={`${MCP_SERVER_DOCS_URL}/chatgpt#chatgpt-on-the-web`}
                   target="_blank"
                 >
                   {t("chatgpt.guide")}

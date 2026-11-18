@@ -12,6 +12,8 @@ from onyx.auth.permissions import require_permission, token_allows
 from onyx.db.engine.sql_engine import get_session
 from onyx.db.enums import Permission
 from onyx.db.models import User
+from onyx.error_handling.error_codes import OnyxErrorCode
+from onyx.error_handling.exceptions import OnyxError
 from onyx.integrations.plugin_settings import (
     agent_plugin_ids,
     member_plugin_state,
@@ -31,7 +33,7 @@ from onyx.server.features.integrations.models import (
     PluginInstallationPolicyUpdate,
     PluginPublishResponse,
 )
-from onyx.server.features.onyx_plugin.export import build_plugin_bundle
+from onyx.server.features.onyx_plugin.export import PLUGIN_DIR, build_plugin_bundle
 
 router = APIRouter(prefix="/plugins")
 admin_router = APIRouter(prefix="/admin/plugins")
@@ -124,8 +126,12 @@ def export_onyx_plugin(
 ) -> Response:
     # The exported plugin signs in through the OAuth provider, so it needs one.
     settings = require_oauth_provider_settings()
+    if PLUGIN_DIR is None:
+        raise OnyxError(
+            OnyxErrorCode.NOT_FOUND, "This image holds no Onyx plugin files."
+        )
     return Response(
-        content=build_plugin_bundle(settings),
+        content=build_plugin_bundle(PLUGIN_DIR, settings),
         media_type="application/zip",
         headers={
             "Content-Disposition": f'attachment; filename="{ONYX_PLUGIN_FILENAME}"'

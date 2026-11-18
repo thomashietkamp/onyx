@@ -38,7 +38,7 @@ Organizations can require the plugin on every machine through managed settings. 
 
 An Onyx admin can download this plugin with the deployment's address set: **Admin Panel → Plugins → Export Onyx plugin**. That zip is for a host that takes no install options, such as claude.ai chat. The MCP server in it has a fixed URL and signs in through OAuth, and the token option is only for the prefetch.
 
-The backend zips its own copy of the Claude files, in `backend/onyx/server/features/onyx_plugin/bundle`, because its image is built from `backend/` alone. After you change a Claude file here, run `python3 tools/agent_plugin/sync_bundle.py`. The `agent-plugin-bundle-drift` pre-commit hook fails on a difference. A new file also needs an entry in `BUNDLE_FILES` in that script.
+The backend reads this folder. Its image is built from `backend/` alone, so a build passes the folder as the `agent-plugin` build context (`--build-context agent-plugin=extensions/agent-plugin`, or `additional_contexts` in Compose). An image built without it has no plugin files, and the export is off.
 
 ChatGPT on the web marks a plugin that declares an MCP server as Desktop only, so the export has no ChatGPT form. Add Onyx there as a custom MCP server.
 

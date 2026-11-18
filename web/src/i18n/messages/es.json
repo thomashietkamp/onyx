@@ -10368,13 +10368,13 @@
         "downloadFailed": "No se pudo descargar el complemento.",
         "claude": {
           "title": "Claude",
-          "description": "Descarga el complemento y súbelo a Claude. El archivo contiene la dirección de esta instalación.",
+          "description": "Descarga el complemento y súbelo a Claude. El servidor MCP de Onyx viene incluido.",
           "download": "Descargar",
           "guide": "Guía de Claude"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ChatGPT no usa el archivo del complemento. Agrega Onyx como servidor MCP personalizado.",
+          "description": "ChatGPT no puede tomar el servidor MCP de un archivo de complemento. Sigue la guía para agregar Onyx como servidor MCP personalizado.",
           "guide": "Guía de ChatGPT"
         }
       },

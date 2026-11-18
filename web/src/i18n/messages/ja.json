@@ -10368,13 +10368,13 @@
         "downloadFailed": "プラグインをダウンロードできませんでした。",
         "claude": {
           "title": "Claude",
-          "description": "プラグインをダウンロードして Claude にアップロードします。ファイルにはこのデプロイのアドレスが含まれています。",
+          "description": "プラグインをダウンロードして Claude にアップロードします。Onyx MCP サーバーは組み込まれています。",
           "download": "ダウンロード",
           "guide": "Claude ガイド"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ChatGPT はプラグインファイルを使用しません。Onyx をカスタム MCP サーバーとして追加します。",
+          "description": "ChatGPT はプラグインファイルから MCP サーバーを取り込めません。ガイドに従って Onyx をカスタム MCP サーバーとして追加します。",
           "guide": "ChatGPT ガイド"
         }
       },

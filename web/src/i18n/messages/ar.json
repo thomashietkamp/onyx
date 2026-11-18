@@ -10368,13 +10368,13 @@
         "downloadFailed": "تعذّر تنزيل الإضافة.",
         "claude": {
           "title": "Claude",
-          "description": "نزّل الإضافة وارفعها إلى Claude. يحتوي الملف على عنوان هذا النشر.",
+          "description": "نزّل الإضافة وارفعها إلى Claude. خادم MCP الخاص بـ Onyx مضمّن فيها.",
           "download": "تنزيل",
           "guide": "دليل Claude"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "لا يستخدم ChatGPT ملف الإضافة. أضف Onyx كخادم MCP مخصص.",
+          "description": "لا يستطيع ChatGPT أخذ خادم MCP من ملف إضافة. اتبع الدليل لإضافة Onyx كخادم MCP مخصص.",
           "guide": "دليل ChatGPT"
         }
       },

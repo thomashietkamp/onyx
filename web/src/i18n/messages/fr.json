@@ -10368,13 +10368,13 @@
         "downloadFailed": "Impossible de télécharger l’extension.",
         "claude": {
           "title": "Claude",
-          "description": "Téléchargez l’extension et importez-la dans Claude. Le fichier contient l’adresse de ce déploiement.",
+          "description": "Téléchargez l’extension et importez-la dans Claude. Le serveur MCP Onyx est inclus.",
           "download": "Télécharger",
           "guide": "Guide Claude"
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ChatGPT n’utilise pas le fichier de l’extension. Ajoutez Onyx comme serveur MCP personnalisé.",
+          "description": "ChatGPT ne peut pas reprendre le serveur MCP d’un fichier d’extension. Suivez le guide pour ajouter Onyx comme serveur MCP personnalisé.",
           "guide": "Guide ChatGPT"
         }
       },
