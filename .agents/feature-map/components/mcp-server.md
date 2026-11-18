@@ -49,9 +49,9 @@
   MCP URL is fixed in `.mcp.json`, with no token header and no URL option,
   because claude.ai chat takes no install options. The user
   uploads it in Claude and signs in through OAuth. The button shows only with
-  the Onyx OAuth provider on and the plugin files in the image. ChatGPT gets a link to the custom MCP server
-  guide instead: ChatGPT on the web marks a plugin that declares an MCP server
-  as Desktop only.
+  the Onyx OAuth provider on and the plugin files in the image. The export is for Claude only: ChatGPT on the
+  web marks a plugin that declares an MCP server as Desktop only, and a user
+  adds Onyx there as a custom MCP server.
 - **When it fails**, a bad or expired token gets a 401. A PAT or API key
   gets a 401 for every rejection, including an API server outage. An OAuth
   token that the API server refuses for scope gets a 403 `insufficient_scope`

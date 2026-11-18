@@ -188,7 +188,7 @@ test("a scoped manager sees the install setting but cannot change it", async () 
   ).toBeDisabled();
 });
 
-test("exports the Onyx plugin and links the Claude and ChatGPT guides", async () => {
+test("exports the Onyx plugin and links the Claude guide", async () => {
   mockExportEnabled = true;
   mockFetch({
     "/api/admin/integrations": [],
@@ -207,12 +207,6 @@ test("exports the Onyx plugin and links the Claude and ChatGPT guides", async ()
   ).toHaveAttribute(
     "href",
     "https://docs.onyx.app/overview/onyx_anywhere/mcp_server/claude#upload-the-onyx-plugin"
-  );
-  expect(
-    dialog.getByRole("link", { name: new RegExp(copy.export.chatgpt.guide) })
-  ).toHaveAttribute(
-    "href",
-    "https://docs.onyx.app/overview/onyx_anywhere/mcp_server/chatgpt#chatgpt-on-the-web"
   );
 
   await user.click(dialog.getByRole("button", { name: copy.export.download }));

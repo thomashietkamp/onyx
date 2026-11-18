@@ -10364,18 +10364,13 @@
       "exportOnyxPlugin": "Onyx プラグインをエクスポート",
       "export": {
         "title": "Onyx プラグインをエクスポート",
-        "description": "Claude と ChatGPT をこの Onyx デプロイに接続します。各ユーザーは自分の Onyx アカウントでサインインします。",
-        "download": "Claude 用にダウンロード",
+        "description": "Claude をこの Onyx デプロイに接続します。各ユーザーは自分の Onyx アカウントでサインインします。",
+        "download": "ダウンロード",
         "downloadFailed": "プラグインをダウンロードできませんでした。",
         "claude": {
           "title": "Claude",
           "description": "プラグインをダウンロードして Claude にアップロードします。Onyx MCP サーバーは組み込まれています。",
           "guide": "Claude ガイド"
-        },
-        "chatgpt": {
-          "title": "ChatGPT",
-          "description": "Onyx をカスタム MCP サーバーとして追加します。ChatGPT にプラグインファイルは必要ありません。",
-          "guide": "ChatGPT ガイド"
         }
       },
       "columns": {

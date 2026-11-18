@@ -10364,18 +10364,13 @@
       "exportOnyxPlugin": "Export Onyx plugin",
       "export": {
         "title": "Export Onyx Plugin",
-        "description": "Connect Claude and ChatGPT to this Onyx deployment. Each person signs in with their own Onyx account.",
-        "download": "Download for Claude",
+        "description": "Connect Claude to this Onyx deployment. Each person signs in with their own Onyx account.",
+        "download": "Download",
         "downloadFailed": "Could not download the plugin.",
         "claude": {
           "title": "Claude",
           "description": "Download the plugin and upload it in Claude. The Onyx MCP server is built in.",
           "guide": "Claude guide"
-        },
-        "chatgpt": {
-          "title": "ChatGPT",
-          "description": "Add Onyx as a custom MCP server. ChatGPT needs no plugin file.",
-          "guide": "ChatGPT guide"
         }
       },
       "columns": {

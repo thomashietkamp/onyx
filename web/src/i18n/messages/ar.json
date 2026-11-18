@@ -10364,18 +10364,13 @@
       "exportOnyxPlugin": "تصدير إضافة Onyx",
       "export": {
         "title": "تصدير إضافة Onyx",
-        "description": "اربط Claude و ChatGPT بهذا النشر من Onyx. يسجّل كل شخص الدخول بحسابه الخاص في Onyx.",
-        "download": "تنزيل لـ Claude",
+        "description": "اربط Claude بهذا النشر من Onyx. يسجّل كل شخص الدخول بحسابه الخاص في Onyx.",
+        "download": "تنزيل",
         "downloadFailed": "تعذّر تنزيل الإضافة.",
         "claude": {
           "title": "Claude",
           "description": "نزّل الإضافة وارفعها إلى Claude. خادم MCP الخاص بـ Onyx مضمّن فيها.",
           "guide": "دليل Claude"
-        },
-        "chatgpt": {
-          "title": "ChatGPT",
-          "description": "أضف Onyx كخادم MCP مخصص. لا يحتاج ChatGPT إلى ملف إضافة.",
-          "guide": "دليل ChatGPT"
         }
       },
       "columns": {

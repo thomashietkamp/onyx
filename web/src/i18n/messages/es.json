@@ -10364,18 +10364,13 @@
       "exportOnyxPlugin": "Exportar complemento de Onyx",
       "export": {
         "title": "Exportar complemento de Onyx",
-        "description": "Conecta Claude y ChatGPT a esta instalación de Onyx. Cada persona inicia sesión con su propia cuenta de Onyx.",
-        "download": "Descargar para Claude",
+        "description": "Conecta Claude a esta instalación de Onyx. Cada persona inicia sesión con su propia cuenta de Onyx.",
+        "download": "Descargar",
         "downloadFailed": "No se pudo descargar el complemento.",
         "claude": {
           "title": "Claude",
           "description": "Descarga el complemento y súbelo a Claude. El servidor MCP de Onyx viene incluido.",
           "guide": "Guía de Claude"
-        },
-        "chatgpt": {
-          "title": "ChatGPT",
-          "description": "Agrega Onyx como servidor MCP personalizado. ChatGPT no necesita un archivo de complemento.",
-          "guide": "Guía de ChatGPT"
         }
       },
       "columns": {

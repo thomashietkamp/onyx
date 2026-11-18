@@ -11,24 +11,11 @@ import {
 } from "@opal/components";
 import { ContentAction, toast } from "@opal/layouts";
 import { SvgDownload } from "@opal/icons";
-import { SvgClaude, SvgOpenAI } from "@opal/logos";
+import { SvgClaude } from "@opal/logos";
 import { DOCS_BASE_URL } from "@/lib/constants";
 import { downloadOnyxPlugin } from "@/lib/integrations/svc";
 
-const MCP_SERVER_DOCS_URL = `${DOCS_BASE_URL}/overview/onyx_anywhere/mcp_server`;
-
-const CLIENTS = [
-  {
-    key: "claude",
-    icon: SvgClaude,
-    guideUrl: `${MCP_SERVER_DOCS_URL}/claude#upload-the-onyx-plugin`,
-  },
-  {
-    key: "chatgpt",
-    icon: SvgOpenAI,
-    guideUrl: `${MCP_SERVER_DOCS_URL}/chatgpt#chatgpt-on-the-web`,
-  },
-] as const;
+const CLAUDE_GUIDE_URL = `${DOCS_BASE_URL}/overview/onyx_anywhere/mcp_server/claude#upload-the-onyx-plugin`;
 
 interface ExportOnyxPluginModalProps {
   onClose: () => void;
@@ -60,23 +47,21 @@ export default function ExportOnyxPluginModal({
           description={t("description")}
           onClose={onClose}
         />
-        <Modal.Body padding={4} gap={2} alignItems="stretch">
-          {CLIENTS.map(({ key, icon, guideUrl }) => (
-            <Card key={key} border="solid" padding={2}>
-              <ContentAction
-                font="main-ui-action"
-                icon={icon}
-                title={t(`${key}.title`)}
-                description={t(`${key}.description`)}
-                center
-                rightChildren={
-                  <LinkButton href={guideUrl} target="_blank">
-                    {t(`${key}.guide`)}
-                  </LinkButton>
-                }
-              />
-            </Card>
-          ))}
+        <Modal.Body padding={4} alignItems="stretch">
+          <Card border="solid" padding={2}>
+            <ContentAction
+              font="main-ui-action"
+              icon={SvgClaude}
+              title={t("claude.title")}
+              description={t("claude.description")}
+              center
+              rightChildren={
+                <LinkButton href={CLAUDE_GUIDE_URL} target="_blank">
+                  {t("claude.guide")}
+                </LinkButton>
+              }
+            />
+          </Card>
         </Modal.Body>
         <Modal.Footer>
           <BasicModalFooter
