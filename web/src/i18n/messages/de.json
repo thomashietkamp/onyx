@@ -10374,7 +10374,7 @@
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ChatGPT kann den MCP-Server nicht aus einer Plugin-Datei übernehmen. Folgen Sie der Anleitung, um Onyx als benutzerdefinierten MCP-Server hinzuzufügen.",
+          "description": "Diese Plugin-Datei verbindet ChatGPT nicht. Folgen Sie der Anleitung, um Onyx als benutzerdefinierten MCP-Server hinzuzufügen.",
           "guide": "Anleitung für ChatGPT"
         }
       },

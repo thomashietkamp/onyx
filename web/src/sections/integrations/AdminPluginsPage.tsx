@@ -47,8 +47,8 @@ export default function AdminPluginsPage() {
   const { isGlobalHolder } = usePermissionAuthority(Permission.MANAGE_ACTIONS);
   const policyCopy = useInstallationPolicyCopy();
   const policyOptions = usePolicyOptions();
-  // The export route admits only an organization-wide action manager.
   const exportEnabled = useSettings().onyx_plugin_export_enabled;
+  // The export route admits only an organization-wide action manager.
   const canExportOnyxPlugin = isGlobalHolder && exportEnabled;
   const [exportOpen, setExportOpen] = useState(false);
   const [query, setQuery] = useState("");

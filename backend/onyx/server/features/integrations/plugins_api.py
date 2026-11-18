@@ -124,7 +124,6 @@ def publish_plugin(
 def export_onyx_plugin(
     _: User = Depends(require_permission(Permission.MANAGE_ACTIONS)),
 ) -> Response:
-    # The exported plugin signs in through the OAuth provider, so it needs one.
     settings = require_oauth_provider_settings()
     if PLUGIN_DIR is None:
         raise OnyxError(

@@ -10374,7 +10374,7 @@
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ChatGPT はプラグインファイルから MCP サーバーを取り込めません。ガイドに従って Onyx をカスタム MCP サーバーとして追加します。",
+          "description": "このプラグインファイルでは ChatGPT を接続できません。ガイドに従って Onyx をカスタム MCP サーバーとして追加します。",
           "guide": "ChatGPT ガイド"
         }
       },

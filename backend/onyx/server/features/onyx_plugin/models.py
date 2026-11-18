@@ -1,12 +1,10 @@
-"""The parts of the plugin's JSON files that the export reads or edits.
-
-A model keeps the keys it does not name, and a dump drops a key set to None,
-which is how the export removes one."""
-
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class PluginJsonFile(BaseModel):
+    """Keeps the keys it does not name. A dump drops every key whose value is None,
+    which is how the export removes one."""
+
     model_config = ConfigDict(extra="allow")
 
     def dump(self) -> str:

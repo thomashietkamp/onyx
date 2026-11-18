@@ -10374,7 +10374,7 @@
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "لا يستطيع ChatGPT أخذ خادم MCP من ملف إضافة. اتبع الدليل لإضافة Onyx كخادم MCP مخصص.",
+          "description": "ملف الإضافة هذا لا يربط ChatGPT. اتبع الدليل لإضافة Onyx كخادم MCP مخصص.",
           "guide": "دليل ChatGPT"
         }
       },

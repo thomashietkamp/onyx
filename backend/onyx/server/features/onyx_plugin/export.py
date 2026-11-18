@@ -84,15 +84,16 @@ def build_plugin_bundle(plugin_dir: Path, settings: OAuthProviderSettings) -> by
         HOOKS_PATH: _stamped_hooks(plugin_dir, settings.web_url),
     }
     buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as bundle:
+    with zipfile.ZipFile(buffer, "w") as bundle:
         for path in sorted(plugin_dir.rglob("*")):
             name = path.relative_to(plugin_dir).as_posix()
             if not path.is_file() or name == MARKETPLACE_PATH:
                 continue
             # from_file keeps the launcher's executable bit.
             info = zipfile.ZipInfo.from_file(path, name)
-            info.compress_type = zipfile.ZIP_DEFLATED
             bundle.writestr(
-                info, stamped[name] if name in stamped else path.read_bytes()
+                info,
+                stamped[name] if name in stamped else path.read_bytes(),
+                compress_type=zipfile.ZIP_DEFLATED,
             )
     return buffer.getvalue()

@@ -10374,7 +10374,7 @@
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ChatGPT ne peut pas reprendre le serveur MCP d’un fichier d’extension. Suivez le guide pour ajouter Onyx comme serveur MCP personnalisé.",
+          "description": "Ce fichier d’extension ne connecte pas ChatGPT. Suivez le guide pour ajouter Onyx comme serveur MCP personnalisé.",
           "guide": "Guide ChatGPT"
         }
       },

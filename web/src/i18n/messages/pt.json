@@ -10374,7 +10374,7 @@
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "O ChatGPT não consegue usar o servidor MCP de um arquivo de plugin. Siga o guia para adicionar o Onyx como um servidor MCP personalizado.",
+          "description": "Este arquivo de plugin não conecta o ChatGPT. Siga o guia para adicionar o Onyx como um servidor MCP personalizado.",
           "guide": "Guia do ChatGPT"
         }
       },

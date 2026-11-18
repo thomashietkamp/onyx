@@ -17,8 +17,11 @@ You do not add a connector or enter a URL.
 <Steps>
   <Step title="Export the plugin from Onyx">
     In Onyx, go to **Admin Panel → Plugins** and select **Export Onyx plugin**, then **Download**.
-    You need the organization-wide **Manage Actions** permission.
-    The file `onyx-plugin.zip` holds the address of your deployment and no credentials.
+    You need the organization-wide **Manage Actions** permission. If you do not have that permission,
+    ask your Onyx administrator for `onyx-plugin.zip`. The file holds the address of your deployment and no credentials.
+
+    If **Export Onyx plugin** does not show, Onyx cannot sign in MCP clients with OAuth.
+    Self-hosted Onyx needs HTTPS for OAuth.
   </Step>
 
   <Step title="Upload the plugin to Claude">
@@ -32,13 +35,11 @@ You do not add a connector or enter a URL.
   </Step>
 </Steps>
 
-**Export Onyx plugin** shows only when Onyx can sign in MCP clients with OAuth. Self-hosted Onyx needs HTTPS for OAuth.
-
 The plugin file does not update. Export and upload the plugin again after you upgrade Onyx or change its web address.
 
 ## Add the Onyx connector
 
-Without the plugin file, add Onyx as a custom connector.
+If you do not use the Onyx plugin, add Onyx as a custom connector.
 
 <Steps>
   <Step title="Open Add custom connector">

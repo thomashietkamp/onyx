@@ -44,9 +44,10 @@
 - **An admin exports that plugin for claude.ai.** A global action manager
   selects Export Onyx plugin on Admin > Plugins
   (`sections/integrations/ExportOnyxPluginModal.tsx`) and downloads a zip from
-  `GET /admin/plugins/onyx-plugin/export`. The zip is the Claude form of the
-  plugin with the deployment's MCP URL fixed in `.mcp.json`, no token header
-  and no URL option, because claude.ai chat takes no install options. The user
+  `GET /admin/plugins/onyx-plugin/export`. The zip is the plugin folder
+  without the marketplace file. The Claude files are edited: the deployment's
+  MCP URL is fixed in `.mcp.json`, with no token header and no URL option,
+  because claude.ai chat takes no install options. The user
   uploads it in Claude and signs in through OAuth. The button shows only with
   the Onyx OAuth provider on and the plugin files in the image. ChatGPT gets a link to the custom MCP server
   guide instead: ChatGPT on the web marks a plugin that declares an MCP server
@@ -208,14 +209,16 @@ process. `/.well-known/oauth-authorization-server` goes to the API server
 12. `plugin-build-context` **The plugin export reads `extensions/agent-plugin/`,
     which is outside the backend build context.** `backend/Dockerfile` copies
     it to `/extensions/agent-plugin` from the `agent-plugin` named build
-    context, which `.github/workflows/deployment.yml` and the Compose files
-    pass. A build without
-    that context still succeeds: the stage is empty, `PLUGIN_DIR` in
-    `backend/onyx/server/features/onyx_plugin/export.py` is `None`, the route
-    answers `NOT_FOUND`, and the `onyx_plugin_export_enabled` setting hides the
-    button. The export edits the manifest option names, the `onyx` server in
-    `.mcp.json` and the hook commands, so a rename in the plugin needs the same
-    rename there.
+    context. `.github/workflows/deployment.yml`, the Compose files and the CI
+    builds with a direct build step pass it. The two Craft matrix builds do
+    not, and a build without the context still succeeds: the stage is empty,
+    `PLUGIN_DIR` in `backend/onyx/server/features/onyx_plugin/export.py` is
+    `None`, the route answers `NOT_FOUND`, and the
+    `onyx_plugin_export_enabled` setting hides the button. The export finds
+    the `onyx_url` and `onyx_api_token` manifest options and the `onyx` server
+    in `.mcp.json` by name, and sets the `ONYX_URL` variable that
+    `extensions/agent-plugin/scripts/hook.ts` reads. A rename in the plugin
+    needs the same rename in that module.
 
 ---
 

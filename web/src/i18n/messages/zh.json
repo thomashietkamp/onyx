@@ -10374,7 +10374,7 @@
         },
         "chatgpt": {
           "title": "ChatGPT",
-          "description": "ChatGPT 无法从插件文件中读取 MCP 服务器。请按照指南将 Onyx 添加为自定义 MCP 服务器。",
+          "description": "此插件文件无法连接 ChatGPT。请按照指南将 Onyx 添加为自定义 MCP 服务器。",
           "guide": "ChatGPT 指南"
         }
       },
