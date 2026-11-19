@@ -109,7 +109,6 @@ const EE_ROUTES = [
   "/admin/performance/usage",
   "/admin/performance/analytics",
   "/admin/performance/query-history",
-  "/admin/performance/custom-analytics",
   "/admin/export-logs",
   "/admin/service-accounts",
   "/agents/stats",

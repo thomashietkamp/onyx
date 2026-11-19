@@ -5,9 +5,13 @@ The paths match what the MIT web app already calls
 routes are public: the login page needs branding before anyone signs in.
 """
 
+import hmac
+
 from fastapi import APIRouter, Depends, Response, UploadFile
+from pydantic import BaseModel, Field
 
 from onyx.auth.permissions import require_permission
+from onyx.configs.app_configs import CUSTOM_ANALYTICS_SECRET_KEY
 from onyx.db.enums import Permission
 from onyx.db.models import User
 from onyx.error_handling.error_codes import OnyxErrorCode
@@ -25,8 +29,10 @@ from onyx.server.branding.store import (
     LogoKind,
     branding_response,
     delete_logo,
+    load_custom_analytics_script,
     read_logo,
     store_branding_settings,
+    store_custom_analytics_script,
     upload_logo,
 )
 from onyx.utils.audit import (
@@ -42,6 +48,9 @@ admin_router = APIRouter(prefix="/admin/enterprise-settings")
 _LOGO_TYPES = frozenset({"image/png", "image/jpeg"})
 
 _require_admin = require_permission(Permission.FULL_ADMIN_PANEL_ACCESS)
+
+
+MAX_CUSTOM_ANALYTICS_SCRIPT_CHARS = 100_000
 
 
 def _logo_response(kind: LogoKind) -> Response:
@@ -71,6 +80,11 @@ def get_logo() -> Response:
 @public_router.get("/logotype")
 def get_logotype() -> Response:
     return _logo_response(LogoKind.LOGOTYPE)
+
+
+@public_router.get("/custom-analytics-script")
+def get_custom_analytics_script() -> str | None:
+    return load_custom_analytics_script()
 
 
 @admin_router.get("/limits")
@@ -103,6 +117,32 @@ def put_branding(
     store_branding_settings(settings)
     _audit(user, "settings")
     return branding_response()
+
+
+class CustomAnalyticsScriptRequest(BaseModel):
+    script: str = Field(max_length=MAX_CUSTOM_ANALYTICS_SCRIPT_CHARS)
+    secret_key: str
+
+
+# Before the ``/{kind}`` route, which would otherwise take this path.
+@admin_router.put("/custom-analytics-script")
+def put_custom_analytics_script(
+    request: CustomAnalyticsScriptRequest,
+    user: User = Depends(_require_admin),
+) -> None:
+    """Needs the deployment's ``CUSTOM_ANALYTICS_SECRET_KEY``: the script runs
+    on every page, so an admin session alone must not be enough to set it."""
+    if CUSTOM_ANALYTICS_SECRET_KEY is None:
+        raise OnyxError(
+            OnyxErrorCode.INVALID_INPUT,
+            "Custom analytics is not enabled on this deployment",
+        )
+    if not hmac.compare_digest(
+        request.secret_key.encode(), CUSTOM_ANALYTICS_SECRET_KEY.encode()
+    ):
+        raise OnyxError(OnyxErrorCode.INSUFFICIENT_PERMISSIONS, "Wrong secret key")
+    store_custom_analytics_script(request.script.strip())
+    _audit(user, "custom_analytics_script")
 
 
 @admin_router.put("/{kind}")

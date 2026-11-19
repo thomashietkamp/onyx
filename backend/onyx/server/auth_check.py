@@ -39,6 +39,8 @@ PUBLIC_ENDPOINT_SPECS = [
     ("/enterprise-settings", {"GET"}),
     ("/enterprise-settings/logo", {"GET"}),
     ("/enterprise-settings/logotype", {"GET"}),
+    # The page shell loads the analytics script for every visitor.
+    ("/enterprise-settings/custom-analytics-script", {"GET"}),
     # SCIM service discovery: an IdP probes it before it holds a token.
     ("/scim/v2/ServiceProviderConfig", {"GET"}),
     ("/scim/v2/ResourceTypes", {"GET"}),

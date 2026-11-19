@@ -81,6 +81,9 @@ DISABLE_VECTOR_DB = os.environ.get("DISABLE_VECTOR_DB", "").lower() == "true"
 # Hides the "Powered by Onyx" tagline on Enterprise deployments. Do not set
 # without explicit permission from Onyx.
 HIDE_ONYX_BRANDING = os.environ.get("HIDE_ONYX_BRANDING", "").lower() == "true"
+# An admin must send this value to change the custom analytics script. Unset,
+# nobody can change it.
+CUSTOM_ANALYTICS_SECRET_KEY = os.environ.get("CUSTOM_ANALYTICS_SECRET_KEY") or None
 
 # TEMPORARY (will be removed soon): operator-forced Search-UI scope (self-hosted only) —
 # comma-separated document set NAMES. When set, the Onyx Search UI is restricted to those sets

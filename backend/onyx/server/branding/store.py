@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from onyx.configs.constants import (
     KV_BRANDING_SETTINGS_KEY,
+    KV_CUSTOM_ANALYTICS_SCRIPT_KEY,
     ONYX_DEFAULT_APPLICATION_NAME,
     FileOrigin,
 )
@@ -172,3 +173,15 @@ def read_logo(kind: LogoKind) -> tuple[bytes, str] | None:
 def logo_file_id(kind: LogoKind) -> str | None:
     """The file store id of the stored logo, for callers that read it directly."""
     return kind.file_id if _has_logo(kind) else None
+
+
+def load_custom_analytics_script() -> str | None:
+    try:
+        stored = get_kv_store().load(KV_CUSTOM_ANALYTICS_SCRIPT_KEY)
+    except KvKeyNotFoundError:
+        return None
+    return stored if isinstance(stored, str) and stored else None
+
+
+def store_custom_analytics_script(script: str) -> None:
+    get_kv_store().store(KV_CUSTOM_ANALYTICS_SCRIPT_KEY, script)

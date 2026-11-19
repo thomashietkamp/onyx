@@ -1,7 +1,7 @@
 """Admin routes for standard answers and their categories. Shapes follow
 `StandardAnswer` and `StandardAnswerCategory` in `web/src/lib/types.ts`."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -14,6 +14,7 @@ from onyx.db.standard_answer import (
     delete_standard_answer_category,
     fetch_standard_answer_categories,
     fetch_standard_answers,
+    find_matching_standard_answers,
     insert_standard_answer,
     insert_standard_answer_category,
     update_standard_answer,
@@ -21,6 +22,7 @@ from onyx.db.standard_answer import (
 )
 
 router = APIRouter(prefix="/manage/admin/standard-answer")
+query_router = APIRouter(prefix="/query")
 
 _admin = require_permission(Permission.FULL_ADMIN_PANEL_ACCESS)
 
@@ -168,3 +170,17 @@ def delete_category(
     db_session: Session = Depends(get_session),
 ) -> None:
     delete_standard_answer_category(db_session, category_id)
+
+
+@query_router.get("/standard-answer")
+def get_matching_standard_answers(
+    message: str = Query(..., max_length=4000),
+    category_ids: list[int] = Query(default_factory=list),
+    _: User = Depends(require_permission(Permission.BASIC_ACCESS)),
+    db_session: Session = Depends(get_session),
+) -> list[StandardAnswerSnapshot]:
+    """The active standard answers in these categories that match the message."""
+    return [
+        StandardAnswerSnapshot.from_model(answer)
+        for answer in find_matching_standard_answers(db_session, category_ids, message)
+    ]
