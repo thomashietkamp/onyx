@@ -34,6 +34,7 @@ def test_read_routes_are_public_and_writes_are_not() -> None:
         "/enterprise-settings",
         "/enterprise-settings/logo",
         "/enterprise-settings/logotype",
+        "/enterprise-settings/custom-analytics-script",
     }
 
 

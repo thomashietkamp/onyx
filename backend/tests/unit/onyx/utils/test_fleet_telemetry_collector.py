@@ -246,10 +246,15 @@ def test_permission_sync_cadences_follow_the_schedulers_rules(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     unindexed: dict[str, Any] = _connector_row(last_success_at=None)
-    # Onyx Lite runs no permission syncs, and a build without Enterprise code has none.
+    # Onyx Lite runs no permission syncs, and a build with no sync registry has none.
     monkeypatch.setattr(collector, "DISABLE_VECTOR_DB", True)
     assert collector.permission_sync_cadence_reader()(_connector_row()) == (None, None)
     monkeypatch.setattr(collector, "DISABLE_VECTOR_DB", False)
+    monkeypatch.setattr(
+        collector,
+        "fetch_ee_implementation_or_noop",
+        lambda _module, _attribute: lambda *_args: None,
+    )
     assert collector.permission_sync_cadence_reader()(_connector_row()) == (None, None)
     calls: list[tuple[object, ...]] = []
 

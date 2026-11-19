@@ -7,9 +7,13 @@ makes a rename invisible to search. It is safe only because the address stops
 being an alias the moment another identity claims it.
 """
 
+from collections.abc import Iterator
 from types import SimpleNamespace
 from typing import cast
+from unittest.mock import MagicMock, patch
+from uuid import uuid4
 
+import pytest
 from sqlalchemy.orm import Session
 
 from onyx.access.access import _get_acl_for_user
@@ -18,11 +22,27 @@ from onyx.configs.constants import PUBLIC_DOC_PAT
 from onyx.db.models import User
 
 
+@pytest.fixture(autouse=True)
+def _no_groups() -> Iterator[None]:
+    """The user is in no Onyx or external group; only the addresses count."""
+    with (
+        patch("onyx.access.access.get_session_with_current_tenant", MagicMock()),
+        patch("onyx.access.access.fetch_user_group_names_for_user", return_value=[]),
+        patch(
+            "onyx.access.access.fetch_external_group_ids_for_user", return_value=set()
+        ),
+    ):
+        yield
+
+
 def _user(email: str, prior_emails: list[str], is_anonymous: bool = False) -> User:
     return cast(
         User,
         SimpleNamespace(
-            email=email, prior_emails=prior_emails, is_anonymous=is_anonymous
+            id=uuid4(),
+            email=email,
+            prior_emails=prior_emails,
+            is_anonymous=is_anonymous,
         ),
     )
 
