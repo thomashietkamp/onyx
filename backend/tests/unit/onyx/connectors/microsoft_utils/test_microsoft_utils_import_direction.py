@@ -15,9 +15,6 @@ import pytest
 
 BACKEND_DIR = pathlib.Path(__file__).resolve().parents[5]
 PACKAGE_DIR = BACKEND_DIR / "onyx" / "connectors" / "microsoft_utils"
-EE_PACKAGE_DIR = (
-    BACKEND_DIR / "ee" / "onyx" / "external_permissions" / "microsoft_utils"
-)
 
 # Shared connector infrastructure the packages may use. Everything else under
 # `onyx.connectors` is a sibling connector and is off limits.
@@ -69,7 +66,7 @@ def test_package_does_not_import_enterprise(module_path: pathlib.Path) -> None:
 
 @pytest.mark.parametrize(
     "module_path",
-    _modules_in(PACKAGE_DIR) + _modules_in(EE_PACKAGE_DIR),
+    _modules_in(PACKAGE_DIR),
     ids=_module_id,
 )
 def test_package_does_not_import_a_connector(module_path: pathlib.Path) -> None:

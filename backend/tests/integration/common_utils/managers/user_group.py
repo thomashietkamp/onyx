@@ -3,11 +3,14 @@ from uuid import uuid4
 
 import httpx
 
-from ee.onyx.server.user_group.models import UserGroup
 from onyx.db.enums import ConnectorManageRole
 from tests.integration.common_utils.constants import API_SERVER_URL, MAX_DELAY
 from tests.integration.common_utils.http_client import client
-from tests.integration.common_utils.test_models import DATestUser, DATestUserGroup
+from tests.integration.common_utils.test_models import (
+    DATestUser,
+    DATestUserGroup,
+    DATestUserGroupSnapshot,
+)
 
 
 class UserGroupManager:
@@ -212,7 +215,7 @@ class UserGroupManager:
         user_performing_action: DATestUser,
         include_default: bool = False,
         include_users: bool = True,
-    ) -> list[UserGroup]:
+    ) -> list[DATestUserGroupSnapshot]:
         params: dict[str, str] = {}
         if include_default:
             params["include_default"] = "true"
@@ -224,13 +227,13 @@ class UserGroupManager:
             params=params,
         )
         response.raise_for_status()
-        return [UserGroup(**ug) for ug in response.json()]
+        return [DATestUserGroupSnapshot(**ug) for ug in response.json()]
 
     @staticmethod
     def get_default(
         user_performing_action: DATestUser,
         name: str,
-    ) -> UserGroup:
+    ) -> DATestUserGroupSnapshot:
         """Fetch a seeded default group ("Admin" or "Basic") by name."""
         all_groups = UserGroupManager.get_all(
             user_performing_action=user_performing_action,
@@ -257,7 +260,7 @@ class UserGroupManager:
                         f"User group {user_group.id} found but should be deleted"
                     )
                 fetched_cc_ids = {cc_pair.id for cc_pair in fetched_user_group.cc_pairs}
-                fetched_user_ids = {user.id for user in fetched_user_group.users}
+                fetched_user_ids = {str(user.id) for user in fetched_user_group.users}
                 user_group_cc_ids = set(user_group.cc_pair_ids)
                 user_group_user_ids = set(user_group.user_ids)
                 if (

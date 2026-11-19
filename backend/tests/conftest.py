@@ -15,13 +15,19 @@ import pytest  # noqa: E402
 from onyx.utils.variable_functionality import (  # noqa: E402
     fetch_versioned_implementation,
     global_version,
+    is_ee_available,
 )
 
 
 @contextmanager
 def _ee_enabled() -> Generator[None, None, None]:
     """Enables EE mode, then restores the previous EE state and clears the
-    versioned-implementation cache so state doesn't leak between tests."""
+    versioned-implementation cache so state doesn't leak between tests.
+
+    A test that asks for EE mode checks EE behavior, so it cannot run in a
+    build without the EE package (this fork, and the onyx-foss mirror)."""
+    if not is_ee_available():
+        pytest.skip("checks EE behavior; this build has no EE package")
     was_ee = global_version.is_ee_version()
     global_version.set_ee()
     fetch_versioned_implementation.cache_clear()

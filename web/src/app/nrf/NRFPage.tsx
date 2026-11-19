@@ -44,14 +44,11 @@ import { MinimalOnyxDocument } from "@/lib/search/types";
 import DocumentsSidebar from "@/sections/document-sidebar/DocumentsSidebar";
 import PreviewModal from "@/sections/modals/PreviewModal";
 import { useQueryController } from "@/providers/QueryControllerProvider";
-import { paidTierGated } from "@/ce";
-import EESearchUI from "@/ee/sections/SearchUI";
+import SearchUI from "@/sections/search/SearchUI";
 import useMultiModelChat from "@/hooks/useMultiModelChat";
 import MultiModelSelector from "@/sections/model-selector/MultiModelSelector";
 import { useTranslations } from "next-intl";
 import { useSettings } from "@/lib/settings/hooks";
-
-const SearchUI = paidTierGated(EESearchUI);
 
 interface NRFPageProps {
   isSidePanel?: boolean;

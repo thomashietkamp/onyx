@@ -43,10 +43,6 @@ task BACKFILL_CC_PAIR_IDS_TASK: Backfills cc_pair_ids onto chunks written before
 task TABULAR_RECHUNK_TASK: Re-chunks tabular documents indexed with the old strategy, too large for a deploy migration. # one-off: remove once every supported deployment has finished the re-chunk
 
 # Permission sync (EE)
-task CHECK_FOR_DOC_PERMISSIONS_SYNC: Beat check that finds cc-pairs due for a permission sync and sends it.
-task CONNECTOR_PERMISSION_SYNC_GENERATOR_TASK: Long crawl of one source's document permissions, on the heavy worker.
-task CHECK_FOR_EXTERNAL_GROUP_SYNC: Beat check that finds cc-pairs due for a group sync and sends it.
-task CONNECTOR_EXTERNAL_GROUP_SYNC_GENERATOR_TASK: Long crawl of one source's groups, on the heavy worker.
 
 # User files
 task CHECK_FOR_USER_FILE_PROCESSING: Beat check that sends a processing task for each user file in PROCESSING.
@@ -67,15 +63,7 @@ task CLEANUP_STALE_DRAFT_CREDENTIALS: Beat cleanup of draft credentials from con
 task CHECK_FOR_STAGED_CONNECTOR_FILE_CLEANUP: Beat cleanup of files uploaded for connector edits that no plan used.
 
 # Chat retention, exports and reports (EE)
-task CHECK_TTL_MANAGEMENT_TASK: Beat check that starts a chat retention cleanup chain.
-task PERFORM_TTL_MANAGEMENT_TASK: Deletes one batch of expired chat sessions and chains the next batch.
 task PURGE_EXPIRED_HARNESS_SESSIONS: Deletes sandbox session saves that chat retention no longer keeps.
-task EXPORT_QUERY_HISTORY_TASK: User-started CSV export of chat history, too heavy for the API server.
-task EXPORT_QUERY_HISTORY_CLEANUP_TASK: Beat cleanup of finished and failed query history export rows.
-task GENERATE_USAGE_REPORT_TASK: Builds the usage report files, from a user request or the monthly beat entry.
-task EXPORT_LOGS_COLLECT_TASK: Collects one container's log files for a user-started log export.
-task EXPORT_LOGS_CLEANUP_TASK: Beat cleanup of log export files past their retention window.
-task HOOK_EXECUTION_LOG_CLEANUP_TASK: Beat cleanup of old hook execution logs.
 
 # Craft sandboxes and scheduled runs
 task CLEANUP_IDLE_SANDBOXES: Beat sweep of one tenant's stale and idle sandbox rows.
@@ -92,9 +80,6 @@ task SCHEDULED_EVAL_TASK: Weekly evaluation of the configured datasets.
 # Auth, licensing and SSO
 task CLEANUP_OAUTH_PROVIDER_GRANTS: Beat cleanup of expired OAuth provider grants.
 task CLEANUP_OAUTH_PROVIDER_CLIENTS: Beat cleanup of idle OAuth provider clients.
-task CHECK_LICENSE_EXPIRY_NOTIFICATIONS: Daily check that notifies admins of a license that expires soon.
-task RECLAIM_LICENSE: Fetches a renewed license from the control plane before the stored one expires, off the request path.
-task REVALIDATE_SSO_DOMAINS_TASK: Beat check that revokes SSO domain routing that is no longer verified.
 task CHECK_FOR_AUTO_LLM_UPDATE: Beat sync of auto-update LLM providers with their published model lists.
 
 # Monitoring
@@ -105,11 +90,9 @@ task CELERY_BEAT_HEARTBEAT: Beat heartbeat key that shows the scheduler is alive
 task COLLECT_FLEET_TELEMETRY: Beat collection of fleet telemetry.
 
 # Cloud
-task CLOUD_BEAT_TASK_GENERATOR: Fans one beat entry out to a task for each tenant.
 task CLOUD_MONITOR_ALEMBIC: Beat check that every tenant is on the same Alembic revision.
 task CLOUD_MONITOR_CELERY_QUEUES: Beat metric of queue lengths across the cloud.
 task CLOUD_MONITOR_CELERY_PIDBOX: Beat cleanup of pidbox queues left by old workers.
-task CLOUD_CHECK_AVAILABLE_TENANTS: Beat check that keeps enough tenants provisioned in advance.
 
 # Beat entries
 beat check-for-indexing: Finds cc-pairs due for indexing every 15 seconds.
@@ -134,11 +117,6 @@ beat check-for-stale-capability-runs: Retires stale check runs every 10 minutes.
 beat cleanup-old-capability-check-runs: Deletes old check runs daily.
 beat cleanup-stale-draft-credentials: Deletes stale draft credentials every 30 days.
 beat check-for-staged-connector-file-cleanup: Deletes unused staged connector files every hour.
-beat check-ttl-management: Starts chat retention cleanup on its configured interval.
-beat export-query-history-cleanup-task: Cleans query history export rows every hour.
-beat autogenerate-usage-report: Builds a usage report every 30 days.
-beat export-logs-cleanup-task: Deletes old log exports every hour.
-beat hook-execution-log-cleanup: Deletes old hook execution logs daily.
 beat cleanup-idle-sandboxes: Sweeps stale and idle sandboxes on its configured interval.
 beat reconcile-sandbox-runtimes: Reconciles sandbox runtimes every 15 minutes on a self-hosted deployment.
 beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_reconcile-sandbox-runtimes: Reconciles sandbox runtimes every 15 minutes across the cloud.
@@ -148,8 +126,6 @@ beat scheduled-eval-pipeline: Runs the configured eval datasets weekly.
 beat cleanup-oauth-provider-grants: Deletes expired OAuth grants daily.
 beat cleanup-oauth-provider-clients: Deletes idle OAuth clients daily on a self-hosted deployment.
 beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_cleanup-oauth-provider-clients: Deletes idle OAuth clients daily across the cloud.
-beat check-license-expiry-notifications: Checks license expiry daily.
-beat revalidate-sso-domains: Revalidates SSO domains every 6 hours.
 beat check-for-auto-llm-update: Syncs auto-update LLM providers on their configured interval.
 beat monitor-celery-queues: Records queue lengths every 10 seconds.
 beat monitor-process-memory: Records worker memory every 5 minutes.

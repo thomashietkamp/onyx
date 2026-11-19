@@ -30,6 +30,8 @@ MAP_DIR = Path(__file__).resolve().parent
 REPO_ROOT = MAP_DIR.parent.parent
 COMPONENTS = "components"
 ALLOWLIST = "path-allowlist.txt"
+# Written by fork/strip_ee.sh: the cited paths that only the removed EE code had.
+FORK_REMOVED_PATHS = "fork-removed-paths.txt"
 TOP_LEVEL_DOCS = ("ARCHITECTURE.md", "CROSS-CUTTING.md", "INDEX.md", "GLOSSARY.md")
 NOT_MAPPED = "Not mapped"
 COMMON_TASKS = "Common tasks"
@@ -330,6 +332,17 @@ def read_allowlist(map_dir: Path) -> set[tuple[str, str]]:
         doc, _, token = line.partition(": ")
         entries.add((doc.strip(), token.strip()))
     return entries
+
+
+def read_fork_removed_paths(map_dir: Path) -> set[str]:
+    path = map_dir / FORK_REMOVED_PATHS
+    if not path.exists():
+        return set()
+    return {
+        line.strip()
+        for line in path.read_text().splitlines()
+        if line.strip() and not line.startswith("#")
+    }
 
 
 def paths_rows(text: str) -> list[PathsRow]:
@@ -694,7 +707,9 @@ def _check_index(
     return errors
 
 
-def _check_paths(map_dir: Path, names: set[str], repo: Repo) -> list[str]:
+def _check_paths(
+    map_dir: Path, names: set[str], repo: Repo, removed: set[str]
+) -> list[str]:
     errors: list[str] = []
     for row in paths_rows((map_dir / "PATHS.md").read_text()):
         where = f"PATHS.md:{row.number}"
@@ -709,7 +724,7 @@ def _check_paths(map_dir: Path, names: set[str], repo: Repo) -> list[str]:
         errors.extend(
             f"{where}: `{token}` does not exist in the repo"
             for token in row.tokens
-            if not resolve_token(token, repo)
+            if token not in removed and not resolve_token(token, repo)
         )
         if row.not_mapped:
             if not row.owner:
@@ -726,7 +741,7 @@ def _check_paths(map_dir: Path, names: set[str], repo: Repo) -> list[str]:
 
 
 def _check_paths_exist(
-    doc: Doc, repo: Repo, allowed: set[tuple[str, str]]
+    doc: Doc, repo: Repo, allowed: set[tuple[str, str]], removed: set[str]
 ) -> list[str]:
     errors: list[str] = []
     for line in doc.lines:
@@ -734,7 +749,7 @@ def _check_paths_exist(
             continue
         for token in CODE_SPAN.findall(line.text):
             path = looks_like_path(token, repo)
-            if path is None or (doc.rel, token) in allowed:
+            if path is None or (doc.rel, token) in allowed or token in removed:
                 continue
             if not candidates(path, repo):
                 errors.append(
@@ -783,6 +798,7 @@ def check(
     top_level = load_top_level(map_dir)
     repo = repo_paths(repo_root)
     allowed = read_allowlist(map_dir)
+    removed = read_fork_removed_paths(map_dir)
 
     seen: dict[str, str] = {}
     for doc in components:
@@ -808,7 +824,7 @@ def check(
 
     names = {doc.name for doc in components}
     errors.extend(_check_index(map_dir, components, summaries))
-    errors.extend(_check_paths(map_dir, names, repo))
+    errors.extend(_check_paths(map_dir, names, repo, removed))
 
     keys = {doc.name: link_keys(doc) for doc in components}
     anchors = {doc.rel: _heading_anchors(doc.text) for doc in components}
@@ -816,7 +832,7 @@ def check(
         doc = load_doc(map_dir, path)
         errors.extend(_check_links(doc, keys, anchors))
         if doc.rel != "PATHS.md":
-            errors.extend(_check_paths_exist(doc, repo, allowed))
+            errors.extend(_check_paths_exist(doc, repo, allowed, removed))
     return errors, _check_ancestry(components, repo)
 
 

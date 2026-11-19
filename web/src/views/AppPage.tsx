@@ -99,9 +99,7 @@ import WelcomeMessage from "@/app/app/components/WelcomeMessage";
 import ChatUI from "@/sections/chat/ChatUI";
 import { FULL_WIDTH_TRANSITION } from "@/lib/chat/layout";
 import { useFullWidthChat } from "@/providers/FullWidthChatProvider";
-import { paidTierGated } from "@/ce";
-import EESearchUI from "@/ee/sections/SearchUI";
-const SearchUI = paidTierGated(EESearchUI);
+import SearchUI from "@/sections/search/SearchUI";
 import { motion, AnimatePresence } from "motion/react";
 import { useTranslations } from "next-intl";
 

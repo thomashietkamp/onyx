@@ -58,7 +58,6 @@ from onyx.background.celery.apps.client import celery_app  # noqa: E402
 from onyx.configs.constants import DocumentSource  # noqa: E402
 from onyx.db.engine.sql_engine import (  # noqa: E402
     SqlEngine,
-    get_session_with_current_tenant,
 )
 from onyx.utils.variable_functionality import (  # noqa: E402
     fetch_versioned_implementation,
@@ -95,7 +94,6 @@ from tests.integration.common_utils.managers.user_group import (  # noqa: E402
     UserGroupManager,
 )
 from tests.integration.common_utils.reset import (  # noqa: E402
-    _seed_dev_license_if_set,
     reset_all,
     reset_all_multitenant,
 )
@@ -360,20 +358,6 @@ def streaming_api(_test_client: TestClient) -> Iterator[str]:
     finally:
         server.should_exit = True
         worker.result(timeout=15)
-
-
-@pytest.fixture(scope="session", autouse=True)
-def seed_dev_license_for_session(initialize_db: None) -> None:  # noqa: ARG001
-    # ``reset_postgres`` re-seeds the dev license after every wipe, but tests
-    # that don't take the ``reset`` fixture would otherwise hit Business-tier
-    # endpoints (e.g. /admin/api-key) with no License row and 402. Seed once at
-    # session start; no-op when ONYX_DEV_LICENSE is unset. Skip in multi-tenant
-    # mode: License rows live in tenant schemas, and the public-schema session
-    # here would seed into the wrong place.
-    if MULTI_TENANT:
-        return
-    with get_session_with_current_tenant() as db_session:
-        _seed_dev_license_if_set(db_session)
 
 
 """NOTE: for some reason using this seems to lead to misc

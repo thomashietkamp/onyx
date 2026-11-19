@@ -183,8 +183,6 @@ rule = "alembic must not import ee"
 reason = "Community Edition runs the same migrations without the ee package."
 instead = "Keep a migration self-contained. Put an Enterprise data change behind fetch_versioned_implementation in onyx/."
 source = ["alembic/", "alembic_tenants/"]
-# The two multi-tenant runners are Enterprise tools, not migrations.
-source_exclude = ["alembic/check_tenant_snapshot.py", "alembic/run_multitenant_migrations.py"]
 forbidden = ["ee"]
 
 [[contract]]

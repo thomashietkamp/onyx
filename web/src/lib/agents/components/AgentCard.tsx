@@ -9,11 +9,8 @@ import { Button, SelectCard, Text, useCreateModal } from "@opal/components";
 import { usePinnedAgents } from "@/lib/agents/hooks";
 import { noProp } from "@/lib/utils";
 import { can } from "@/lib/permissions/resource-actions";
-import { useTierAtLeast } from "@/lib/tiers/hooks";
-import { Tier } from "@/lib/tiers/types";
 import {
   SvgActions,
-  SvgBarChart,
   SvgBubbleText,
   SvgEdit,
   SvgPinned,
@@ -64,7 +61,6 @@ export function AgentCard({ agent, onView, viewing = false }: AgentCardProps) {
     () => pinnedAgents.some((pinnedAgent) => pinnedAgent.id === agent.id),
     [agent.id, pinnedAgents]
   );
-  const businessTier = useTierAtLeast(Tier.BUSINESS);
   const shareAgentModal = useCreateModal();
 
   // A failed pin write reverts the pin; say so rather than fail silently.
@@ -130,19 +126,6 @@ export function AgentCard({ agent, onView, viewing = false }: AgentCardProps) {
                     gap={0}
                     padding={1}
                   >
-                    {can(agent, "view_stats") && businessTier && (
-                      <Hoverable.Item group="AgentCard">
-                        <Button
-                          icon={SvgBarChart}
-                          prominence="tertiary"
-                          size="md"
-                          onClick={noProp(() =>
-                            navigation.go(`/ee/agents/stats/${agent.id}`)
-                          )}
-                          tooltip={t("card.viewStats.tooltip")}
-                        />
-                      </Hoverable.Item>
-                    )}
                     {can(agent, "edit") && (
                       <Hoverable.Item group="AgentCard">
                         <Button

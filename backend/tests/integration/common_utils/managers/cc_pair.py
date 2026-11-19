@@ -6,7 +6,6 @@ from uuid import uuid4
 
 import httpx
 
-from ee.onyx.server.documents.manage_access import CCPairManageAccessRow
 from onyx.connectors.models import InputType
 from onyx.db.enums import AccessType, ConnectorCredentialPairStatus, ConnectorManageRole
 from onyx.server.documents.models import (
@@ -21,7 +20,11 @@ from tests.integration.common_utils.constants import API_SERVER_URL, MAX_DELAY
 from tests.integration.common_utils.http_client import client
 from tests.integration.common_utils.managers.connector import ConnectorManager
 from tests.integration.common_utils.managers.credential import CredentialManager
-from tests.integration.common_utils.test_models import DATestCCPair, DATestUser
+from tests.integration.common_utils.test_models import (
+    DATestCCPair,
+    DATestManageAccessRow,
+    DATestUser,
+)
 
 
 def _cc_pair_creator(
@@ -126,20 +129,20 @@ class CCPairManager:
     @staticmethod
     def get_manage_access(
         cc_pair_id: int, user_performing_action: DATestUser
-    ) -> list[CCPairManageAccessRow]:
+    ) -> list[DATestManageAccessRow]:
         response = client.get(
             f"{API_SERVER_URL}/manage/admin/cc-pair/{cc_pair_id}/manage-access",
             headers=user_performing_action.headers,
         )
         response.raise_for_status()
-        return [CCPairManageAccessRow(**row) for row in response.json()]
+        return [DATestManageAccessRow(**row) for row in response.json()]
 
     @staticmethod
     def set_manage_access(
         cc_pair_id: int,
         manage_access: dict[int, ConnectorManageRole],
         user_performing_action: DATestUser,
-    ) -> list[CCPairManageAccessRow]:
+    ) -> list[DATestManageAccessRow]:
         response = client.put(
             f"{API_SERVER_URL}/manage/admin/cc-pair/{cc_pair_id}/manage-access",
             json={
@@ -151,7 +154,7 @@ class CCPairManager:
             headers=user_performing_action.headers,
         )
         response.raise_for_status()
-        return [CCPairManageAccessRow(**row) for row in response.json()]
+        return [DATestManageAccessRow(**row) for row in response.json()]
 
     @staticmethod
     def pause_cc_pair(

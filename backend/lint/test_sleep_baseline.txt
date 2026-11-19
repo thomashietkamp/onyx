@@ -8,7 +8,6 @@
 # One `<count> <path>` per line, sorted by path.
 2 backend/tests/common/craft/cleanup_worker.py
 1 backend/tests/common/craft/kubernetes_resources.py
-1 backend/tests/daily/connectors/egnyte/test_egnyte_basic.py
 1 backend/tests/external_dependency_unit/auth/test_mobile_sso_code_store.py
 2 backend/tests/external_dependency_unit/auth/test_oauth_callback_oidc_expiry_session.py
 3 backend/tests/external_dependency_unit/cache/test_cache_backend_parity.py
@@ -44,14 +43,11 @@
 2 backend/tests/external_dependency_unit/microvm/test_sandbox_tools.py
 1 backend/tests/external_dependency_unit/mock_image_provider.py
 1 backend/tests/external_dependency_unit/oauth_provider/test_native_clients.py
-1 backend/tests/external_dependency_unit/permission_sync/test_pause_cancels_permission_syncs.py
-3 backend/tests/external_dependency_unit/permission_sync/test_permission_sync_attempt_lease.py
 1 backend/tests/external_dependency_unit/redis/test_incognito_context.py
 1 backend/tests/external_dependency_unit/sandbox_proxy/test_approval_cache.py
 5 backend/tests/external_dependency_unit/sandbox_proxy/test_identity_docker_lookup.py
 1 backend/tests/external_dependency_unit/sandbox_proxy/test_informer_watch_deadline.py
 1 backend/tests/external_dependency_unit/scripts/test_orphan_doc_cleanup_script.py
-1 backend/tests/external_dependency_unit/server/documents/test_restricted_data_access_lock.py
 3 backend/tests/external_dependency_unit/tools/test_code_mode.py
 2 backend/tests/external_dependency_unit/utils/test_playwright_outbound.py
 2 backend/tests/external_dependency_unit/voice/test_openai_streaming.py
@@ -61,7 +57,6 @@
 1 backend/tests/integration/common_utils/managers/document.py
 1 backend/tests/integration/common_utils/managers/document_set.py
 2 backend/tests/integration/common_utils/managers/index_attempt.py
-1 backend/tests/integration/common_utils/managers/query_history.py
 3 backend/tests/integration/common_utils/managers/reindex_port.py
 2 backend/tests/integration/common_utils/managers/user_group.py
 1 backend/tests/integration/conftest.py
@@ -73,7 +68,6 @@
 1 backend/tests/integration/mock_services/mock_llm_server/server.py
 1 backend/tests/integration/tests/capability_checks/test_capability_check_run.py
 1 backend/tests/integration/tests/chat/test_pending_messages_and_subagents.py
-1 backend/tests/integration/tests/chat_retention/test_chat_retention.py
 1 backend/tests/integration/tests/cli/conftest.py
 1 backend/tests/integration/tests/connector_edit/test_connector_edit_flow.py
 1 backend/tests/integration/tests/craft/docker_e2e/test_serve_streaming_docker.py
@@ -93,26 +87,19 @@
 1 backend/tests/integration/tests/mcp/conftest.py
 3 backend/tests/integration/tests/mcp/test_mcp_chat_tool_approval.py
 1 backend/tests/integration/tests/migrations/test_drop_opensearch_migration_tables.py
-1 backend/tests/integration/tests/migrations/test_run_multitenant_migrations.py
 2 backend/tests/integration/tests/no_vectordb/test_no_vectordb_chat.py
 2 backend/tests/integration/tests/no_vectordb/test_no_vectordb_file_lifecycle.py
 3 backend/tests/integration/tests/pat/test_pat_api.py
 1 backend/tests/integration/tests/personas/test_persona_file_context.py
 3 backend/tests/integration/tests/pruning/test_pruning.py
 2 backend/tests/integration/tests/reindex_port/test_reindex_port.py
-5 backend/tests/integration/tests/reporting/test_usage_export_api.py
 1 backend/tests/integration/tests/scim/test_scim_tokens.py
 3 backend/tests/integration/tests/skills/test_chat_skills.py
-1 backend/tests/integration/tests/spending_limits/test_spending_limits_api.py
 1 backend/tests/integration/tests/streaming_endpoints/test_chat_stream.py
 1 backend/tests/integration/tests/streaming_endpoints/test_gateway_usage_tracking.py
 1 backend/tests/integration/tests/streaming_endpoints/test_resume_stream.py
 1 backend/tests/integration/tests/streaming_endpoints/test_user_usage_tracking.py
-2 backend/tests/manual/embedding_models/test_embedding_model_switch_e2e.py
 1 backend/tests/regression/answer_quality/file_uploader.py
-1 backend/tests/regression/search_quality/run_search_eval.py
-1 backend/tests/unit/ee/onyx/server/log_export/test_kubernetes_log_collection.py
-1 backend/tests/unit/ee/onyx/server/middleware/test_asgi_middleware.py
 4 backend/tests/unit/model_server/test_embedding.py
 7 backend/tests/unit/onyx/agents/test_child_coordination.py
 1 backend/tests/unit/onyx/agents/test_code_mode_input.py

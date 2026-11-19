@@ -4,12 +4,12 @@ from enum import Enum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from onyx.chat.mention_models import RecordedMention
 from onyx.configs.constants import MessageType, QAFeedbackType
 from onyx.context.search.models import SavedSearchDoc, SearchDoc
-from onyx.db.enums import AccessType
+from onyx.db.enums import AccessType, ConnectorManageRole
 from onyx.server.documents.models import (
     DocumentSource,
     IndexAttemptSnapshot,
@@ -120,6 +120,38 @@ class DATestUserGroup(BaseModel):
     name: str
     user_ids: list[str]
     cc_pair_ids: list[int]
+
+
+class DATestIdRef(BaseModel):
+    """A nested object of which the tests only read the id."""
+
+    model_config = ConfigDict(extra="allow")
+
+    id: str | int
+
+
+class DATestUserGroupSnapshot(BaseModel):
+    """A user group as `GET /manage/admin/user-group` returns it."""
+
+    model_config = ConfigDict(extra="allow")
+
+    id: int
+    name: str
+    is_default: bool = False
+    is_up_to_date: bool = True
+    users: list[DATestIdRef] = Field(default_factory=list)
+    cc_pairs: list[DATestIdRef] = Field(default_factory=list)
+
+
+class DATestManageAccessRow(BaseModel):
+    """One row of `GET /manage/admin/cc-pair/{id}/manage-access`."""
+
+    model_config = ConfigDict(extra="allow")
+
+    group_id: int
+    group_name: str
+    role: ConnectorManageRole
+    is_fixed: bool = False
 
 
 class DATestLLMProvider(BaseModel):

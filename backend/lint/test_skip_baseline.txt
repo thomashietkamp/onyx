@@ -11,6 +11,5 @@
 1 backend/tests/external_dependency_unit/craft_helm/test_sandbox_image_prepuller.py
 1 backend/tests/external_dependency_unit/llm/test_prompt_caching.py
 1 backend/tests/external_dependency_unit/oauth_provider/test_native_clients.py
-1 backend/tests/integration/connector_job_tests/onedrive/test_onedrive_full_acl_integration.py
 1 backend/tests/integration/tests/gateway_clients/conftest.py
 1 backend/tests/integration/tests/llm_workflows/test_nightly_provider_chat_workflow.py

@@ -149,9 +149,9 @@ to the no-op when no PostHog client is configured.
 
 ## Contracts and traps
 
-1. `ce-file-not-running-code` **The CE file is not the code that runs.** Every
-   standard image copies `backend/ee` (`backend/Dockerfile`), so `ee.<module>`
-   wins. `backend/onyx/utils/encryption.py:_encrypt_string` returns the input
+1. `ce-file-not-running-code` **Upstream, the CE file is not the code that
+   runs.** Every upstream image copies `backend/ee` (`backend/Dockerfile`), so
+   `ee.<module>` wins. In this fork the CE file runs (see Decisions). `backend/onyx/utils/encryption.py:_encrypt_string` returns the input
    unchanged, but deployments run
    `backend/ee/onyx/utils/encryption.py:_encrypt_string`, which encrypts with
    AES. Read the `ee.` mirror before you conclude what Onyx does. Every
@@ -237,11 +237,12 @@ to the no-op when no PostHog client is configured.
 
 ## Decisions
 
-- **EE code ships in every image.** One image serves every customer. A license
-  change takes effect at runtime, so an upgrade or a downgrade needs no new
-  image and no restart. The image label in `backend/Dockerfile` states the
-  license terms for the EE code. Customers who need MIT-only code use the
-  `onyx-foss` mirror.
+- **This fork ships no EE code.** `fork/strip_ee.sh` removes the EE trees and
+  the tests and scripts that need them, and leaves an empty `backend/ee`
+  package. Run it after every upstream merge. So the CE implementations always
+  run here, and the `ee.` paths that the rest of this map cites describe
+  upstream only (listed in `.agents/feature-map/fork-removed-paths.txt`). Tests that use
+  `enable_ee` skip. Rebuilt features go in the MIT tree (`fork/README.md`).
 - **The tier order lives in CE.** `backend/onyx/server/settings/tier_order.py`
   lets any CE module compare tiers without an import of EE code.
   `get_current_tier` returns `COMMUNITY` when EE code is not loaded.
