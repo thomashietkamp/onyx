@@ -1,7 +1,10 @@
+import hashlib
+
 from onyx.configs.constants import DocumentSource
 
 USER_EMAIL_ACL_PREFIX = "user_email:"
 EXTERNAL_GROUP_ACL_PREFIX = "external_group:"
+_INSTANCE_KEY_LENGTH = 12
 
 
 def prefix_user_email(user_email: str) -> str:
@@ -35,3 +38,16 @@ def build_domain_group_id(domain: str) -> str:
     populates it with the real Workspace roster for the domain, so membership is
     Google's own rather than inferred from a user's email string."""
     return f"domain:{domain.lower()}"
+
+
+def instance_key(instance_url: str) -> str:
+    """A short hash of a source instance's URL. A user's external groups are
+    matched across every pair, so group ids that repeat across instances of
+    one source (names, project or course ids) carry this key."""
+    normalized: str = instance_url.strip().rstrip("/").lower()
+    return hashlib.sha256(normalized.encode()).hexdigest()[:_INSTANCE_KEY_LENGTH]
+
+
+def build_instance_scoped_group_id(instance_url: str, group_id: str) -> str:
+    """The raw group id ``group_id`` of the instance at ``instance_url``."""
+    return f"{instance_key(instance_url)}:{group_id}"

@@ -73,6 +73,8 @@ def test_credential_base_url_is_used(monkeypatch: pytest.MonkeyPatch) -> None:
             }
         )
         assert _base_url_of(connector) == "https://github.example.com/api/v3"
+        # The permission-sync group ids are scoped to the instance the client calls.
+        assert connector.instance_url == _base_url_of(connector)
 
 
 def test_credential_base_url_wins_over_env(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -114,6 +116,7 @@ def test_defaults_to_github_dot_com(monkeypatch: pytest.MonkeyPatch) -> None:
     with _ssrf_env():
         connector.load_credentials({"github_access_token": "token"})
         assert _base_url_of(connector) == "https://api.github.com"
+        assert connector.instance_url == _base_url_of(connector)
 
 
 class TestCredentialBaseUrlSSRF:

@@ -13,6 +13,7 @@ from onyx.access.models import ExternalAccess
 from onyx.background.celery.celery_utils import extract_ids_from_runnable_connector
 from onyx.connectors.github.connector import GithubConnector
 from onyx.connectors.github.models import GitHubPullRequest, GitHubRepository
+from onyx.connectors.github.utils import GITHUB_COM_API_URL
 from onyx.connectors.interfaces import SlimConnector, SlimConnectorWithPermSync
 from onyx.connectors.models import SlimDocument
 
@@ -101,7 +102,7 @@ def test_retrieve_all_slim_docs_perm_sync_populates_external_access(
         batches = list(connector.retrieve_all_slim_docs_perm_sync())
 
     # permission fetched at least once per repo (once per page in checkpoint-based flow)
-    mock_perm.assert_called_with(mock_repo)
+    mock_perm.assert_called_with(mock_repo, GITHUB_COM_API_URL)
 
     all_docs = [doc for batch in batches for doc in batch]
     assert all(doc.external_access is mock_access for doc in all_docs)

@@ -5,18 +5,34 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from onyx.connectors.jira.source_operations import JiraApiError
+from onyx.access.utils import build_ext_group_name_for_onyx
+from onyx.configs.constants import DocumentSource
+from onyx.connectors.jira.config import JiraCredentialBinding
+from onyx.connectors.jira.source_operations import JiraApiError, bound_site_url
 from onyx.external_permissions.jira import page_access
 from onyx.external_permissions.jira.group_sync import iter_jira_groups
-from onyx.external_permissions.jira.page_access import get_project_permissions
+from onyx.external_permissions.jira.page_access import (
+    get_project_permissions,
+    jira_group_id,
+)
+
+_SITE = "https://acme.atlassian.net"
+_OTHER_SITE = "https://jira.example.com"
+
+
+def _prefixed(group_id: str) -> str:
+    return build_ext_group_name_for_onyx(group_id, DocumentSource.JIRA)
 
 
 def _browse(holder: dict[str, Any]) -> dict[str, Any]:
     return {"permission": "BROWSE_PROJECTS", "holder": holder}
 
 
-def _ops(scheme: dict[str, Any], roles: dict[str, dict[str, Any]]) -> MagicMock:
+def _ops(
+    scheme: dict[str, Any], roles: dict[str, dict[str, Any]], site: str = _SITE
+) -> MagicMock:
     ops = MagicMock()
+    ops._binding.return_value = JiraCredentialBinding(jira_base_url=site)
     ops.get_project_permission_scheme.return_value = scheme
     ops.get_project_role.side_effect = lambda **kwargs: roles[kwargs["role_id"]]
     ops.get_user.side_effect = lambda *, user_id: {
@@ -56,7 +72,10 @@ def test_scheme_maps_users_groups_and_roles(_: MagicMock) -> None:
     access = get_project_permissions(_ops(scheme, roles), "PRJ", add_prefix=True)
     assert access is not None
     assert access.external_user_emails == {"ann@x.com", "bob@x.com"}
-    assert access.external_user_group_ids == {"jira_jira-devs", "jira_qa"}
+    assert access.external_user_group_ids == {
+        _prefixed(jira_group_id(_SITE, "jira-devs")),
+        _prefixed(jira_group_id(_SITE, "qa")),
+    }
     assert not access.is_public
 
 
@@ -76,7 +95,7 @@ def test_dc_role_actors_are_flat(_: MagicMock) -> None:
     access = get_project_permissions(ops, "PRJ")
     assert access is not None
     assert access.external_user_emails == {"dc-user@x.com"}
-    assert access.external_user_group_ids == {"dc-group"}
+    assert access.external_user_group_ids == {jira_group_id(_SITE, "dc-group")}
 
 
 @pytest.mark.parametrize("holder_type", ["anyone", "applicationRole"])
@@ -122,9 +141,14 @@ def test_group_sync_pages_members_and_skips_deleted_groups() -> None:
 
     groups = {
         group.id: group.user_emails
-        for group in iter_jira_groups(["devs", "gone", "empty"], member_page)
+        for group in iter_jira_groups(
+            ["devs", "gone", "empty"], member_page, site_url=_SITE
+        )
     }
-    assert groups == {"devs": ["a@x.com", "b@x.com"], "empty": []}
+    assert groups == {
+        jira_group_id(_SITE, "devs"): ["a@x.com", "b@x.com"],
+        jira_group_id(_SITE, "empty"): [],
+    }
 
 
 def test_group_sync_raises_on_other_errors() -> None:
@@ -133,4 +157,35 @@ def test_group_sync_raises_on_other_errors() -> None:
         raise JiraApiError("denied", status_code=403)
 
     with pytest.raises(JiraApiError):
-        list(iter_jira_groups(["devs"], member_page))
+        list(iter_jira_groups(["devs"], member_page, site_url=_SITE))
+
+
+_GROUP_SCHEME = {"permissions": [_browse({"type": "group", "parameter": "jira-devs"})]}
+
+
+def _members(group_name: str, start_at: int, max_results: int) -> dict:
+    del group_name, start_at, max_results
+    return {"values": [{"emailAddress": "a@x.com"}], "isLast": True}
+
+
+@patch.object(page_access, "is_cloud_gateway", return_value=True)
+def test_document_and_group_sync_ids_match_for_one_site(_: MagicMock) -> None:
+    ops = _ops(_GROUP_SCHEME, {})
+    access = get_project_permissions(ops, "PRJ")
+    assert access is not None
+    synced = {
+        group.id
+        for group in iter_jira_groups(
+            ["jira-devs"], _members, site_url=bound_site_url(ops)
+        )
+    }
+    assert access.external_user_group_ids == synced
+
+
+@patch.object(page_access, "is_cloud_gateway", return_value=True)
+def test_same_group_name_on_two_sites_names_different_groups(_: MagicMock) -> None:
+    on_a = get_project_permissions(_ops(_GROUP_SCHEME, {}, _SITE), "PRJ")
+    on_b = get_project_permissions(_ops(_GROUP_SCHEME, {}, _OTHER_SITE), "PRJ")
+    assert on_a is not None and on_b is not None
+    assert on_a.external_user_group_ids
+    assert not on_a.external_user_group_ids & on_b.external_user_group_ids

@@ -43,8 +43,8 @@ from onyx.connectors.github.source_operations import (
 )
 from onyx.connectors.github.utils import (
     get_external_access_permission,
+    github_instance_url,
     parse_repository_names,
-    resolve_github_base_url,
 )
 from onyx.connectors.interfaces import (
     CheckpointedConnectorWithPermSync,
@@ -702,6 +702,7 @@ class GithubConnector(
         # Branch to index files from; None means each repo's default branch.
         self.branch = (branch or "").strip() or None
         self._source_operations: GitHubSourceOperations | None = None
+        self._instance_url: str | None = None
         # Profiles read for the user fields of the metadata, by login. None
         # marks a profile that could not be read.
         self._user_cache: dict[str, GitHubUser | None] = {}
@@ -712,10 +713,17 @@ class GithubConnector(
             raise ConnectorMissingCredentialError("GitHub")
         return self._source_operations
 
+    @property
+    def instance_url(self) -> str:
+        """The API root of the credential's instance (see ``github_instance_url``)."""
+        if self._instance_url is None:
+            raise ConnectorMissingCredentialError("GitHub")
+        return self._instance_url
+
     def load_credentials(self, credentials: dict[str, Any]) -> dict[str, Any] | None:
         # Raises ConnectorValidationError for an unsafe Enterprise Server URL
         # now, not on the first call.
-        resolve_github_base_url(credentials)
+        self._instance_url = github_instance_url(credentials)
         self._source_operations = GitHubSourceOperations(
             credentials_provider=OnyxStaticCredentialsProvider(
                 None, DocumentSource.GITHUB.value, credentials
@@ -1153,7 +1161,9 @@ class GithubConnector(
         cursor_url_callback = make_cursor_url_callback(checkpoint)
         repo_external_access: ExternalAccess | None = None
         if include_permissions:
-            repo_external_access = get_external_access_permission(repo)
+            repo_external_access = get_external_access_permission(
+                repo, self.instance_url
+            )
         if self.include_prs and checkpoint.stage == GithubConnectorStage.PRS:
             logger.info("Fetching PRs for repo: %s", repo.name)
 
@@ -1662,7 +1672,7 @@ class GithubConnector(
                         )
                     continue
                 repo_external_access = (
-                    get_external_access_permission(repo)
+                    get_external_access_permission(repo, self.instance_url)
                     if include_permissions
                     else None
                 )
@@ -1880,7 +1890,9 @@ if __name__ == "__main__":
         {"github_access_token": os.environ["ACCESS_TOKEN_GITHUB"]}
     )
 
-    get_external_access_permission(connector.fetch_configured_repos().pop())
+    get_external_access_permission(
+        connector.fetch_configured_repos().pop(), connector.instance_url
+    )
 
     # Create a time range from epoch to now
     end_time = datetime.now(timezone.utc)

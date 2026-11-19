@@ -13,6 +13,7 @@ from onyx.connectors.github.models import (
     GitHubUser,
 )
 from onyx.connectors.github.source_operations import GitHubSourceOperations
+from onyx.connectors.github.utils import GITHUB_COM_API_URL
 
 _RATE_LIMIT_RESET = datetime(2023, 1, 1, tzinfo=timezone.utc)
 
@@ -169,6 +170,7 @@ def build_github_connector(
             branch=branch,
         )
         connector._source_operations = mock_source_operations
+        connector._instance_url = GITHUB_COM_API_URL
         return connector
 
     return _build

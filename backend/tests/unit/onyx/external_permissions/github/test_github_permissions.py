@@ -8,9 +8,16 @@ from onyx.configs.constants import DocumentSource
 from onyx.connectors.github.connector import GithubConnector
 from onyx.connectors.github.models import GitHubRepository, GitHubUser
 from onyx.connectors.github.source_operations import GitHubApiError
-from onyx.connectors.github.utils import get_external_access_permission
+from onyx.connectors.github.utils import (
+    GITHUB_COM_API_URL,
+    get_external_access_permission,
+)
 from onyx.db.external_perm import prefixed_group_id
 from onyx.external_permissions.github.group_sync import iter_github_groups
+from onyx.external_permissions.github.utils import (
+    organization_members_group_id,
+    repository_collaborators_group_id,
+)
 
 
 def _repo(
@@ -31,31 +38,58 @@ def _repo(
 
 
 _ORG = {"id": 7, "login": "acme"}
+_GHES = "https://ghes.example.com/api/v3"
+
+
+def _prefixed(group_id: str) -> str:
+    return build_ext_group_name_for_onyx(group_id, DocumentSource.GITHUB)
 
 
 def test_public_repository_is_public() -> None:
-    access = get_external_access_permission(_repo(1, "public", _ORG))
+    access = get_external_access_permission(
+        _repo(1, "public", _ORG), GITHUB_COM_API_URL
+    )
     assert access.is_public
     assert not access.external_user_group_ids
 
 
 @pytest.mark.parametrize("visibility", ["private", None])
 def test_private_repository_names_collaborators(visibility: str | None) -> None:
-    access = get_external_access_permission(_repo(2, visibility, _ORG))
+    access = get_external_access_permission(
+        _repo(2, visibility, _ORG), GITHUB_COM_API_URL
+    )
     assert not access.is_public
     assert access.external_user_group_ids == {
-        build_ext_group_name_for_onyx("repo_2_collaborators", DocumentSource.GITHUB)
+        _prefixed(repository_collaborators_group_id(GITHUB_COM_API_URL, 2))
     }
 
 
 def test_internal_repository_names_organization() -> None:
-    access = get_external_access_permission(_repo(3, "internal", _ORG))
-    assert access.external_user_group_ids == {"github_org_7_members"}
+    access = get_external_access_permission(
+        _repo(3, "internal", _ORG), GITHUB_COM_API_URL
+    )
+    assert access.external_user_group_ids == {
+        _prefixed(organization_members_group_id(GITHUB_COM_API_URL, 7))
+    }
 
 
 def test_internal_repository_without_organization_uses_collaborators() -> None:
-    access = get_external_access_permission(_repo(4, "internal"))
-    assert access.external_user_group_ids == {"github_repo_4_collaborators"}
+    access = get_external_access_permission(_repo(4, "internal"), GITHUB_COM_API_URL)
+    assert access.external_user_group_ids == {
+        _prefixed(repository_collaborators_group_id(GITHUB_COM_API_URL, 4))
+    }
+
+
+@pytest.mark.parametrize("visibility", ["private", "internal"])
+def test_same_ids_on_two_instances_name_different_groups(visibility: str) -> None:
+    """A repository or organization id of github.com can repeat on an
+    Enterprise Server. Users of one must not read the other's documents."""
+    repo = _repo(2, visibility, _ORG)
+    on_github_com = get_external_access_permission(repo, GITHUB_COM_API_URL)
+    on_ghes = get_external_access_permission(repo, _GHES)
+    assert on_github_com.external_user_group_ids
+    assert on_ghes.external_user_group_ids
+    assert not on_github_com.external_user_group_ids & on_ghes.external_user_group_ids
 
 
 def _users(login: str) -> GitHubUser:
@@ -78,13 +112,17 @@ def test_group_sync_matches_document_group_ids() -> None:
     ops.get_user.side_effect = lambda login: _users(login)
     connector = MagicMock(spec=GithubConnector)
     connector.source_operations = ops
+    connector.instance_url = _GHES
     connector.fetch_configured_repos.return_value = repos
 
     groups = list(iter_github_groups(connector))
 
     assert [(g.id, g.user_emails) for g in groups] == [
-        ("repo_2_collaborators", ["ann@example.com"]),
-        ("org_7_members", ["ann@example.com", "bob@example.com"]),
+        (repository_collaborators_group_id(_GHES, 2), ["ann@example.com"]),
+        (
+            organization_members_group_id(_GHES, 7),
+            ["ann@example.com", "bob@example.com"],
+        ),
     ]
     # One members listing per organization, one profile read per login.
     ops.list_organization_members.assert_called_once_with(org_login="acme")
@@ -92,7 +130,9 @@ def test_group_sync_matches_document_group_ids() -> None:
     doc_groups = {
         group_id
         for repo in repos
-        for group_id in get_external_access_permission(repo).external_user_group_ids
+        for group_id in get_external_access_permission(
+            repo, _GHES
+        ).external_user_group_ids
     }
     assert {prefixed_group_id(g.id, DocumentSource.GITHUB) for g in groups} == {
         prefixed_group_id(g, DocumentSource.GITHUB) for g in doc_groups

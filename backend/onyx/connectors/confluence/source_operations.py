@@ -2067,6 +2067,12 @@ def build_probed_confluence_gateway(
     return gateway
 
 
+def bound_site_url(gateway: ConfluenceSourceOperations) -> str:
+    """The URL of the gateway's bound site. A Cloud base with and without
+    "/wiki" gives one value."""
+    return gateway._binding().comparison_values()["wiki_base"]
+
+
 def user_list_variant(gateway: ConfluenceSourceOperations) -> ConfluenceUserListVariant:
     """The ``list_users`` variant of the gateway's bound site."""
     return (

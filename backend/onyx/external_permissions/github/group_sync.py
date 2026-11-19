@@ -85,7 +85,7 @@ def iter_github_groups(connector: GithubConnector) -> Iterator[ExternalUserGroup
                 ),
             )
             yield ExternalUserGroup(
-                id=repository_collaborators_group_id(repo.id),
+                id=repository_collaborators_group_id(connector.instance_url, repo.id),
                 user_emails=resolver.emails(logins),
             )
         elif (
@@ -99,7 +99,7 @@ def iter_github_groups(connector: GithubConnector) -> Iterator[ExternalUserGroup
                 ops, partial(ops.list_organization_members, org_login=org.login)
             )
             yield ExternalUserGroup(
-                id=organization_members_group_id(org.id),
+                id=organization_members_group_id(connector.instance_url, org.id),
                 user_emails=resolver.emails(logins),
             )
 

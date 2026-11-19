@@ -18,6 +18,7 @@ logger = setup_logger()
 # GitHub Enterprise Server exposes its REST API under /api/v3, while github.com
 # uses api.github.com. PyGithub needs the full API root, not the web host.
 GHES_API_SUFFIX = "/api/v3"
+GITHUB_COM_API_URL = "https://api.github.com"
 
 
 def normalize_github_base_url(base_url: str | None) -> str | None:
@@ -106,14 +107,23 @@ def resolve_github_base_url(credentials: Mapping[str, Any]) -> str | None:
     return normalize_github_base_url(GITHUB_CONNECTOR_BASE_URL)
 
 
-def get_external_access_permission(repo: GitHubRepository) -> ExternalAccess:
+def github_instance_url(credentials: Mapping[str, Any]) -> str:
+    """The API root of the instance the credential reaches. Repository and
+    organization ids repeat across github.com and Enterprise Servers, so it
+    scopes the permission-sync group ids."""
+    return resolve_github_base_url(credentials) or GITHUB_COM_API_URL
+
+
+def get_external_access_permission(
+    repo: GitHubRepository, instance_url: str
+) -> ExternalAccess:
     """The access of every document of a repository, with source-prefixed
     group ids (indexing stores them as given)."""
     get_access = cast(
-        Callable[[GitHubRepository, bool], ExternalAccess],
+        Callable[[GitHubRepository, str, bool], ExternalAccess],
         fetch_versioned_implementation(
             "onyx.external_permissions.github.utils",
             "get_external_access_permission",
         ),
     )
-    return get_access(repo, True)
+    return get_access(repo, instance_url, True)

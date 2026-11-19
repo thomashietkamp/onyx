@@ -22,10 +22,11 @@ returned here carry the Onyx source prefix; the doc sync prefix is idempotent.
 The group sync yields the same ids without the prefix.
 """
 
-import hashlib
-
 from onyx.access.models import ExternalAccess
-from onyx.access.utils import build_ext_group_name_for_onyx
+from onyx.access.utils import (
+    build_ext_group_name_for_onyx,
+    build_instance_scoped_group_id,
+)
 from onyx.configs.constants import DocumentSource
 from onyx.connectors.gitlab.models import (
     FEATURE_ENABLED,
@@ -35,26 +36,19 @@ from onyx.connectors.gitlab.models import (
     GitlabProjectAccessInfo,
 )
 
-_INSTANCE_HASH_LENGTH = 12
-
 ROLE_REPORTER = "reporter"
 ROLE_GUEST = "guest"
-
-
-def _instance_key(instance_url: str) -> str:
-    normalized: str = instance_url.strip().rstrip("/").lower()
-    return hashlib.sha256(normalized.encode()).hexdigest()[:_INSTANCE_HASH_LENGTH]
 
 
 def project_role_group_id(instance_url: str, project_id: int, role: str) -> str:
     """Raw id of the project members with ``role`` or a higher role. The guest
     group holds every member of the reporter group."""
-    return f"{_instance_key(instance_url)}:project_{project_id}_{role}"
+    return build_instance_scoped_group_id(instance_url, f"project_{project_id}_{role}")
 
 
 def instance_users_group_id(instance_url: str) -> str:
     """Raw id of every active, non-external user of a self-managed instance."""
-    return f"{_instance_key(instance_url)}:instance_users"
+    return build_instance_scoped_group_id(instance_url, "instance_users")
 
 
 def uses_instance_users_group(info: GitlabProjectAccessInfo) -> bool:

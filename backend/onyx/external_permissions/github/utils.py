@@ -6,10 +6,17 @@ repository is public. An internal repository is readable by the members of
 its organization. A private repository, or one whose visibility is unknown, is
 readable by its collaborators (every grant: direct, team, organization base
 permission). The group sync supplies the members of both group kinds.
+
+Repository and organization ids repeat across github.com and Enterprise
+Servers, and a user's groups are matched across all pairs, so the group ids
+carry a hash of the instance's API root (``github_instance_url``).
 """
 
 from onyx.access.models import ExternalAccess
-from onyx.access.utils import build_ext_group_name_for_onyx
+from onyx.access.utils import (
+    build_ext_group_name_for_onyx,
+    build_instance_scoped_group_id,
+)
 from onyx.configs.constants import DocumentSource
 from onyx.connectors.github.models import GitHubRepository
 
@@ -17,12 +24,12 @@ VISIBILITY_PUBLIC = "public"
 VISIBILITY_INTERNAL = "internal"
 
 
-def repository_collaborators_group_id(repo_id: int) -> str:
-    return f"repo_{repo_id}_collaborators"
+def repository_collaborators_group_id(instance_url: str, repo_id: int) -> str:
+    return build_instance_scoped_group_id(instance_url, f"repo_{repo_id}_collaborators")
 
 
-def organization_members_group_id(org_id: int) -> str:
-    return f"org_{org_id}_members"
+def organization_members_group_id(instance_url: str, org_id: int) -> str:
+    return build_instance_scoped_group_id(instance_url, f"org_{org_id}_members")
 
 
 def is_collaborator_scoped(repo: GitHubRepository) -> bool:
@@ -33,7 +40,7 @@ def is_collaborator_scoped(repo: GitHubRepository) -> bool:
 
 
 def get_external_access_permission(
-    repo: GitHubRepository, add_prefix: bool
+    repo: GitHubRepository, instance_url: str, add_prefix: bool
 ) -> ExternalAccess:
     if repo.visibility == VISIBILITY_PUBLIC:
         return ExternalAccess(
@@ -42,9 +49,9 @@ def get_external_access_permission(
             is_public=True,
         )
     if repo.visibility == VISIBILITY_INTERNAL and repo.organization is not None:
-        group_id = organization_members_group_id(repo.organization.id)
+        group_id = organization_members_group_id(instance_url, repo.organization.id)
     else:
-        group_id = repository_collaborators_group_id(repo.id)
+        group_id = repository_collaborators_group_id(instance_url, repo.id)
     if add_prefix:
         group_id = build_ext_group_name_for_onyx(group_id, DocumentSource.GITHUB)
     return ExternalAccess(

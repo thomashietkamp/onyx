@@ -5,12 +5,18 @@ from typing import Any, cast
 from unittest.mock import MagicMock
 
 from onyx.access.models import ExternalAccess
+from onyx.access.utils import build_ext_group_name_for_onyx
+from onyx.configs.constants import DocumentSource
 from onyx.connectors.canvas.client import CanvasApiClient
 from onyx.connectors.canvas.connector import (
     CanvasAnnouncement,
     CanvasAnnouncementSection,
     CanvasAssignment,
     CanvasAssignmentOverride,
+    canvas_all_users_group_id,
+    canvas_course_group_id,
+    canvas_group_group_id,
+    canvas_section_group_id,
 )
 from onyx.error_handling.error_codes import OnyxErrorCode
 from onyx.error_handling.exceptions import OnyxError
@@ -24,6 +30,14 @@ from onyx.external_permissions.canvas.access import (
 from onyx.external_permissions.canvas.group_sync import iter_canvas_groups
 
 _COURSE = 7
+_BASE = "https://school.instructure.com/api/v1"
+_OTHER_BASE = "https://other.instructure.com/api/v1"
+
+
+def _prefixed(group_id: str) -> str:
+    return build_ext_group_name_for_onyx(group_id, DocumentSource.CANVAS)
+
+
 _ROSTER: list[dict[str, Any]] = [
     {
         "id": 1,
@@ -69,8 +83,10 @@ def _client(
     groups: list[dict[str, Any]] | None = None,
     group_users: dict[int, list[dict[str, Any]]] | None = None,
     account_users: list[dict[str, Any]] | None = None,
+    base_url: str = _BASE,
 ) -> MagicMock:
     client = MagicMock(spec=CanvasApiClient)
+    client.base_url = base_url
     client.get.return_value = ({"id": _COURSE, "is_public": is_public}, None)
 
     def paginate(endpoint: str, params: dict[str, Any] | None = None) -> Iterator:
@@ -97,7 +113,10 @@ def _client(
 def _course_access(*extra_groups: str) -> ExternalAccess:
     return ExternalAccess(
         external_user_emails=set(),
-        external_user_group_ids={"canvas_canvas-course-7", *extra_groups},
+        external_user_group_ids={
+            _prefixed(canvas_course_group_id(_BASE, _COURSE)),
+            *extra_groups,
+        },
         is_public=False,
     )
 
@@ -116,7 +135,7 @@ def test_page_maps_to_course_group_and_public_course_adds_all_users() -> None:
 
     assert get_page_permissions(private_context) == _course_access()
     assert get_course_permissions(public_client, _COURSE) == _course_access(
-        "canvas_canvas-all-users"
+        _prefixed(canvas_all_users_group_id(_BASE))
     )
 
 
@@ -136,7 +155,10 @@ def test_assignment_visible_to_overrides_only() -> None:
 
     assert access == ExternalAccess(
         external_user_emails={"teacher@school.edu", "s2@school.edu"},
-        external_user_group_ids={"canvas_canvas-section-71", "canvas_canvas-group-900"},
+        external_user_group_ids={
+            _prefixed(canvas_section_group_id(_BASE, 71)),
+            _prefixed(canvas_group_group_id(_BASE, 900)),
+        },
         is_public=False,
     )
     assert get_assignment_permissions(context, _assignment()) == _course_access()
@@ -157,7 +179,7 @@ def test_section_announcement_maps_to_sections_and_staff() -> None:
 
     assert access == ExternalAccess(
         external_user_emails={"teacher@school.edu"},
-        external_user_group_ids={"canvas_canvas-section-70"},
+        external_user_group_ids={_prefixed(canvas_section_group_id(_BASE, 70))},
         is_public=False,
     )
 
@@ -174,10 +196,14 @@ def test_group_sync_emits_course_section_and_canvas_groups() -> None:
     }
 
     assert groups == {
-        "canvas-course-7": ["s2@school.edu", "s3@school.edu", "teacher@school.edu"],
-        "canvas-section-70": ["s2@school.edu", "teacher@school.edu"],
-        "canvas-section-71": ["s3@school.edu"],
-        "canvas-group-900": ["s3@school.edu"],
+        canvas_course_group_id(_BASE, _COURSE): [
+            "s2@school.edu",
+            "s3@school.edu",
+            "teacher@school.edu",
+        ],
+        canvas_section_group_id(_BASE, 70): ["s2@school.edu", "teacher@school.edu"],
+        canvas_section_group_id(_BASE, 71): ["s3@school.edu"],
+        canvas_group_group_id(_BASE, 900): ["s3@school.edu"],
     }
 
 
@@ -193,5 +219,54 @@ def test_group_sync_all_users_only_for_public_courses_and_when_listable() -> Non
         g.id for g in iter_canvas_groups(cast(CanvasApiClient, denied), [_COURSE])
     }
 
-    assert listable_groups["canvas-all-users"] == ["any@school.edu"]
-    assert "canvas-all-users" not in denied_ids
+    all_users = canvas_all_users_group_id(_BASE)
+    assert listable_groups[all_users] == ["any@school.edu"]
+    assert all_users not in denied_ids
+
+
+def _document_group_ids(client: MagicMock) -> set[str]:
+    canvas_client = cast(CanvasApiClient, client)
+    context = build_course_permission_context(canvas_client, _COURSE)
+    assignment = _assignment(
+        only_visible_to_overrides=True,
+        overrides=[
+            CanvasAssignmentOverride(course_section_id=71),
+            CanvasAssignmentOverride(group_id=900),
+        ],
+    )
+    return (
+        get_page_permissions(context).external_user_group_ids
+        | get_assignment_permissions(context, assignment).external_user_group_ids
+    )
+
+
+def _synced_group_ids(client: MagicMock) -> set[str]:
+    return {
+        _prefixed(group.id)
+        for group in iter_canvas_groups(cast(CanvasApiClient, client), [_COURSE])
+    }
+
+
+def test_document_ids_are_the_synced_group_ids() -> None:
+    client = _client(
+        is_public=True,
+        groups=[{"id": 900}],
+        group_users={900: [{"id": 3}]},
+        account_users=[{"email": "any@school.edu"}],
+    )
+    assert _document_group_ids(client) <= _synced_group_ids(client)
+
+
+def test_same_course_ids_on_two_instances_name_different_groups() -> None:
+    """Course 7 on one Canvas instance is not course 7 on another, and the
+    users of one instance are not the "all users" of the other."""
+    kwargs: dict[str, Any] = {
+        "is_public": True,
+        "groups": [{"id": 900}],
+        "group_users": {900: [{"id": 3}]},
+        "account_users": [{"email": "any@school.edu"}],
+    }
+    docs_a = _document_group_ids(_client(**kwargs))
+    synced_b = _synced_group_ids(_client(base_url=_OTHER_BASE, **kwargs))
+    assert docs_a
+    assert not docs_a & synced_b

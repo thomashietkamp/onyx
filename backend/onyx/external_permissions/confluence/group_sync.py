@@ -1,6 +1,7 @@
 """Group sync for Confluence.
 
-Restrictions and space permissions name Confluence groups by name. Confluence
+Restrictions and space permissions name Confluence groups by name, and both
+sides scope the name to the site (``users.confluence_group_id``). Confluence
 lists the groups of a user (``rest/api/user/memberof``), not the members of a
 group for every deployment, so this sync lists the site's users, reads each
 user's groups, and inverts the result.
@@ -28,13 +29,17 @@ from onyx.connectors.confluence.connector import ConfluenceConnector
 from onyx.connectors.confluence.models import ConfluenceUser
 from onyx.connectors.confluence.source_operations import (
     ConfluenceSourceOperations,
+    bound_site_url,
     user_list_variant,
 )
 from onyx.connectors.factory import instantiate_connector
 from onyx.db.external_perm import ExternalUserGroup
 from onyx.db.models import ConnectorCredentialPair
 from onyx.db.users import get_all_users
-from onyx.external_permissions.confluence.users import is_cloud_gateway
+from onyx.external_permissions.confluence.users import (
+    confluence_group_id,
+    is_cloud_gateway,
+)
 from onyx.utils.logger import setup_logger
 
 logger = setup_logger()
@@ -54,6 +59,7 @@ def iter_groups_from_members(
     members: Iterable[ConfluenceGroupMember],
     list_user_groups: Callable[[str], Iterable[str]],
     *,
+    site_url: str,
     enforce_failure_cap: bool,
 ) -> Iterator[ExternalUserGroup]:
     group_to_emails: dict[str, set[str]] = defaultdict(set)
@@ -77,7 +83,9 @@ def iter_groups_from_members(
             f"Could not read the groups of {failed} of {total} Confluence users"
         )
     for name, emails in group_to_emails.items():
-        yield ExternalUserGroup(id=name, user_emails=sorted(emails))
+        yield ExternalUserGroup(
+            id=confluence_group_id(site_url, name), user_emails=sorted(emails)
+        )
 
 
 def _user_groups(ops: ConfluenceSourceOperations, user_id: str) -> Iterator[str]:
@@ -149,6 +157,7 @@ def confluence_group_sync(
     yield from iter_groups_from_members(
         members,
         lambda user_id: _user_groups(ops, user_id),
+        site_url=bound_site_url(ops),
         enforce_failure_cap=not use_onyx_users,
     )
 

@@ -11,8 +11,10 @@ no group sync, and its documents are never narrowed below the access type that
 an admin sets. This fork has MIT doc sync and group sync for the Microsoft sources
 (SharePoint, OneDrive, Teams, and Outlook without groups), Google Drive, Gmail,
 Confluence, Slack, GitHub, GitLab, Box, Canvas, Egnyte, Linear, YouTrack, Azure
-Data Lake, Zoom and HubSpot. GitLab and YouTrack group ids carry a hash of the
-instance URL, so two instances never share a group. Jira is not in the registry: the fork does not read
+Data Lake, Zoom and HubSpot. GitLab, YouTrack, GitHub, Canvas, Confluence and Jira
+group ids carry a hash of the instance URL
+(`backend/onyx/access/utils.py:build_instance_scoped_group_id`), so two
+instances never share a group. Jira is not in the registry: the fork does not read
 issue security levels, so every issue would get its project's access.
 Salesforce is not in it either: its records need post-query censoring. The registry is
 `backend/onyx/external_permissions/sync_params.py`. A source not in it cannot be
@@ -217,6 +219,13 @@ runs.
    `ee/onyx/external_permissions/google_drive/doc_sync.py`). Hierarchy node
    access is stored as given on every path, the doc sync included, so nodes
    always carry namespaced IDs (`onyx/connectors/egnyte/connector.py:_prefixed`).
+   An ID that repeats across instances of one source (a group name, or a
+   project, course or repo ID) must also go through
+   `backend/onyx/access/utils.py:build_instance_scoped_group_id` with the same
+   instance URL on the document side and the group sync side, because a user's
+   groups are matched across all pairs. In this fork the group sync write
+   (`backend/onyx/db/external_perm.py:upsert_external_groups`) always adds the
+   source prefix once; a group sync must yield raw IDs.
    A change to the
    namespacing needs a full doc sync and group sync, not a reindex, because the
    Postgres rows hold the old IDs.

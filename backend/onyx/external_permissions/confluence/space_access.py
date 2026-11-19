@@ -31,7 +31,10 @@ from onyx.connectors.confluence.source_operations import (
     read_dc_space_subjects,
 )
 from onyx.connectors.exceptions import ConnectorValidationError
-from onyx.external_permissions.confluence.users import confluence_user_email
+from onyx.external_permissions.confluence.users import (
+    confluence_group_ids,
+    confluence_user_email,
+)
 from onyx.utils.logger import setup_logger
 
 logger = setup_logger()
@@ -119,6 +122,7 @@ def get_space_access(
         if is_cloud
         else _read_dc_space(source_operations, space_key)
     )
+    groups = confluence_group_ids(source_operations, groups)
     if add_prefix:
         groups = {
             build_ext_group_name_for_onyx(group, DocumentSource.CONFLUENCE)

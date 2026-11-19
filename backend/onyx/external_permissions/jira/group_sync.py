@@ -1,7 +1,8 @@
 """Group sync for Jira.
 
 Project permission schemes and project roles name Jira groups by name (see
-``page_access.py``). This sync lists the site's groups (``groups/picker``) and
+``page_access.py``), and both sides scope the name to the site
+(``jira_group_id``). This sync lists the site's groups (``groups/picker``) and
 reads the active members of each (``group/member``). Project roles need no
 group sync: the doc sync expands their user actors.
 
@@ -17,9 +18,10 @@ from sqlalchemy.orm import Session
 
 from onyx.connectors.factory import instantiate_connector
 from onyx.connectors.jira.connector import JiraConnector
-from onyx.connectors.jira.source_operations import JiraApiError
+from onyx.connectors.jira.source_operations import JiraApiError, bound_site_url
 from onyx.db.external_perm import ExternalUserGroup
 from onyx.db.models import ConnectorCredentialPair
+from onyx.external_permissions.jira.page_access import jira_group_id
 from onyx.utils.logger import setup_logger
 
 logger = setup_logger()
@@ -54,7 +56,7 @@ def _group_member_emails(group_name: str, member_page: MemberPage) -> set[str]:
 
 
 def iter_jira_groups(
-    group_names: Iterable[str], member_page: MemberPage
+    group_names: Iterable[str], member_page: MemberPage, *, site_url: str
 ) -> Iterator[ExternalUserGroup]:
     for group_name in group_names:
         try:
@@ -64,7 +66,9 @@ def iter_jira_groups(
                 logger.info("Jira group %s was deleted during the sync", group_name)
                 continue
             raise
-        yield ExternalUserGroup(id=group_name, user_emails=sorted(emails))
+        yield ExternalUserGroup(
+            id=jira_group_id(site_url, group_name), user_emails=sorted(emails)
+        )
 
 
 def jira_group_sync(
@@ -94,4 +98,5 @@ def jira_group_sync(
         lambda group_name, start_at, max_results: ops.get_group_members_page(
             group_name=group_name, start_at=start_at, max_results=max_results
         ),
+        site_url=bound_site_url(ops),
     )

@@ -65,7 +65,8 @@ def _course_canvas_groups(
                 if isinstance(user_id, int) and user_id in email_by_user_id:
                     emails.add(email_by_user_id[user_id])
         yield ExternalUserGroup(
-            id=canvas_group_group_id(group_id), user_emails=sorted(emails)
+            id=canvas_group_group_id(client.base_url, group_id),
+            user_emails=sorted(emails),
         )
 
 
@@ -95,7 +96,7 @@ def iter_course_groups(
 ) -> Iterator[ExternalUserGroup]:
     email_by_user_id = {m.user_id: m.email for m in members if m.email is not None}
     yield ExternalUserGroup(
-        id=canvas_course_group_id(course_id),
+        id=canvas_course_group_id(client.base_url, course_id),
         user_emails=sorted(set(email_by_user_id.values())),
     )
     section_emails: dict[int, set[str]] = {}
@@ -106,7 +107,8 @@ def iter_course_groups(
             section_emails.setdefault(section_id, set()).add(member.email)
     for section_id, emails in sorted(section_emails.items()):
         yield ExternalUserGroup(
-            id=canvas_section_group_id(section_id), user_emails=sorted(emails)
+            id=canvas_section_group_id(client.base_url, section_id),
+            user_emails=sorted(emails),
         )
     yield from _course_canvas_groups(client, course_id, email_by_user_id)
 
@@ -123,7 +125,8 @@ def iter_canvas_groups(
         emails = _account_user_emails(client)
         if emails is not None:
             yield ExternalUserGroup(
-                id=canvas_all_users_group_id(), user_emails=sorted(emails)
+                id=canvas_all_users_group_id(client.base_url),
+                user_emails=sorted(emails),
             )
 
 

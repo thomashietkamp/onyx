@@ -470,3 +470,9 @@ class JiraSourceOperations(SourceOperations):
 def is_cloud_gateway(gateway: JiraSourceOperations) -> bool:
     """True when the gateway's credential uses the Cloud APIs."""
     return gateway._is_cloud()
+
+
+def bound_site_url(gateway: JiraSourceOperations) -> str:
+    """The URL of the gateway's bound site, as the credential use rule
+    compares it."""
+    return gateway._binding().comparison_values()["jira_base_url"]

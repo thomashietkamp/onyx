@@ -18,24 +18,18 @@ source prefix, because hierarchy node access is stored as given; the doc sync
 prefix is idempotent. The group sync yields the same ids without the prefix.
 """
 
-import hashlib
-
 from onyx.access.models import ExternalAccess
-from onyx.access.utils import build_ext_group_name_for_onyx
+from onyx.access.utils import (
+    build_ext_group_name_for_onyx,
+    build_instance_scoped_group_id,
+)
 from onyx.configs.constants import DocumentSource
 from onyx.connectors.youtrack.models import YouTrackIssueAccess
-
-_INSTANCE_HASH_LENGTH = 12
-
-
-def _instance_key(base_url: str) -> str:
-    normalized: str = base_url.strip().rstrip("/").lower()
-    return hashlib.sha256(normalized.encode()).hexdigest()[:_INSTANCE_HASH_LENGTH]
 
 
 def project_group_id(base_url: str, project_id: str) -> str:
     """Raw id of the group of users who can read the project's issues."""
-    return f"{_instance_key(base_url)}:project:{project_id}"
+    return build_instance_scoped_group_id(base_url, f"project:{project_id}")
 
 
 def project_visibility_group_id(base_url: str, project_id: str, group_id: str) -> str:

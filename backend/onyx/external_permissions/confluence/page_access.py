@@ -22,6 +22,7 @@ from onyx.access.utils import build_ext_group_name_for_onyx
 from onyx.configs.constants import DocumentSource
 from onyx.connectors.confluence.source_operations import ConfluenceSourceOperations
 from onyx.external_permissions.confluence.users import (
+    confluence_group_ids,
     confluence_user_email,
     is_cloud_gateway,
 )
@@ -85,15 +86,17 @@ def intersect_restrictions(restrictions: list[ReadRestriction]) -> ReadRestricti
     return ReadRestriction(user_emails=emails, group_names=groups)
 
 
-def _to_access(restriction: ReadRestriction, add_prefix: bool) -> ExternalAccess:
-    group_ids = (
-        {
-            build_ext_group_name_for_onyx(name, DocumentSource.CONFLUENCE)
-            for name in restriction.group_names
+def _to_access(
+    source_operations: ConfluenceSourceOperations,
+    restriction: ReadRestriction,
+    add_prefix: bool,
+) -> ExternalAccess:
+    group_ids = confluence_group_ids(source_operations, restriction.group_names)
+    if add_prefix:
+        group_ids = {
+            build_ext_group_name_for_onyx(group_id, DocumentSource.CONFLUENCE)
+            for group_id in group_ids
         }
-        if add_prefix
-        else set(restriction.group_names)
-    )
     return ExternalAccess(
         external_user_emails=restriction.user_emails,
         external_user_group_ids=group_ids,
@@ -102,6 +105,7 @@ def _to_access(restriction: ReadRestriction, add_prefix: bool) -> ExternalAccess
 
 
 def _resolve(
+    source_operations: ConfluenceSourceOperations,
     page_id: str,
     restrictions: list[ReadRestriction | None],
     add_prefix: bool,
@@ -109,7 +113,7 @@ def _resolve(
     present = [r for r in restrictions if r is not None]
     if not present:
         return None
-    access = _to_access(intersect_restrictions(present), add_prefix)
+    access = _to_access(source_operations, intersect_restrictions(present), add_prefix)
     if not access.external_user_emails and not access.external_user_group_ids:
         logger.info(
             "Confluence content %s is restricted to no one Onyx can map", page_id
@@ -135,7 +139,7 @@ def get_page_restrictions(
         )
         for ancestor in ancestors
     ]
-    return _resolve(page_id, restrictions, add_prefix)
+    return _resolve(source_operations, page_id, restrictions, add_prefix)
 
 
 def get_page_restrictions_with_per_ancestor_fetch(
@@ -174,4 +178,4 @@ def get_page_restrictions_with_per_ancestor_fetch(
         restrictions.append(
             parse_read_restriction(source_operations, raw, is_cloud=is_cloud)
         )
-    return _resolve(page_id, restrictions, add_prefix)
+    return _resolve(source_operations, page_id, restrictions, add_prefix)

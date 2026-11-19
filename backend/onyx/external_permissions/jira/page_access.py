@@ -5,7 +5,9 @@ the project's permission scheme. The connector reaches this through
 - ``anyone`` and ``applicationRole`` (every user with product access) make the
   project public.
 - ``user`` adds the user's email.
-- ``group`` adds the group name, whose members the group sync supplies.
+- ``group`` adds the group, whose members the group sync supplies. Group
+  names repeat across sites, and a user's groups are matched across all
+  pairs, so the id carries a hash of the site URL (``jira_group_id``).
 - ``projectRole`` adds the role's user actors (emails) and group actors.
 - Other holders (project lead, reporter, assignee, user custom fields) are
   issue-relative or rare and add no one: their users can lose access in Onyx,
@@ -19,11 +21,15 @@ sync keeps the issues' last synced ACL.
 from typing import Any
 
 from onyx.access.models import ExternalAccess
-from onyx.access.utils import build_ext_group_name_for_onyx
+from onyx.access.utils import (
+    build_ext_group_name_for_onyx,
+    build_instance_scoped_group_id,
+)
 from onyx.configs.constants import DocumentSource
 from onyx.connectors.jira.source_operations import (
     JiraApiError,
     JiraSourceOperations,
+    bound_site_url,
     is_cloud_gateway,
 )
 from onyx.connectors.jira.utils import (
@@ -43,6 +49,11 @@ logger = setup_logger()
 _PUBLIC_HOLDER_TYPES = frozenset({HOLDER_TYPE_ANYONE, HOLDER_TYPE_APPLICATION_ROLE})
 _ATLASSIAN_ACCOUNT_TYPE = "atlassian"
 _NOT_FOUND = 404
+
+
+def jira_group_id(site_url: str, group_name: str) -> str:
+    """The raw id of a Jira group of the site at ``site_url``."""
+    return build_instance_scoped_group_id(site_url, group_name)
 
 
 class _UserEmails:
@@ -189,9 +200,12 @@ def map_project_permissions(
                 holder_type,
             )
 
+    site_url = bound_site_url(source_operations)
+    groups = {jira_group_id(site_url, name) for name in groups}
     if add_prefix:
         groups = {
-            build_ext_group_name_for_onyx(name, DocumentSource.JIRA) for name in groups
+            build_ext_group_name_for_onyx(group_id, DocumentSource.JIRA)
+            for group_id in groups
         }
     return ExternalAccess(
         external_user_emails=emails,

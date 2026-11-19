@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from typing_extensions import override
 
 from onyx.access.models import ExternalAccess
+from onyx.access.utils import build_instance_scoped_group_id
 from onyx.configs.app_configs import INDEX_BATCH_SIZE
 from onyx.configs.constants import DocumentSource
 from onyx.connectors.canvas.access import (
@@ -63,21 +64,31 @@ CANVAS_SECTION_GROUP_ID_PREFIX = "canvas-section"
 CANVAS_GROUP_GROUP_ID_PREFIX = "canvas-group"
 CANVAS_ALL_USERS_GROUP_ID = "canvas-all-users"
 
-
-def canvas_course_group_id(course_id: int) -> str:
-    return f"{CANVAS_COURSE_GROUP_ID_PREFIX}-{course_id}"
-
-
-def canvas_section_group_id(section_id: int) -> str:
-    return f"{CANVAS_SECTION_GROUP_ID_PREFIX}-{section_id}"
+# Course, section and group ids repeat across Canvas instances, and a user's
+# external groups are matched across every pair, so each id carries a hash of
+# the instance URL (``CanvasApiClient.base_url``).
 
 
-def canvas_group_group_id(group_id: int) -> str:
-    return f"{CANVAS_GROUP_GROUP_ID_PREFIX}-{group_id}"
+def canvas_course_group_id(instance_url: str, course_id: int) -> str:
+    return build_instance_scoped_group_id(
+        instance_url, f"{CANVAS_COURSE_GROUP_ID_PREFIX}-{course_id}"
+    )
 
 
-def canvas_all_users_group_id() -> str:
-    return CANVAS_ALL_USERS_GROUP_ID
+def canvas_section_group_id(instance_url: str, section_id: int) -> str:
+    return build_instance_scoped_group_id(
+        instance_url, f"{CANVAS_SECTION_GROUP_ID_PREFIX}-{section_id}"
+    )
+
+
+def canvas_group_group_id(instance_url: str, group_id: int) -> str:
+    return build_instance_scoped_group_id(
+        instance_url, f"{CANVAS_GROUP_GROUP_ID_PREFIX}-{group_id}"
+    )
+
+
+def canvas_all_users_group_id(instance_url: str) -> str:
+    return build_instance_scoped_group_id(instance_url, CANVAS_ALL_USERS_GROUP_ID)
 
 
 def _handle_canvas_api_error(e: OnyxError) -> NoReturn:
