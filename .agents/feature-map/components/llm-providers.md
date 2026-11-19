@@ -361,7 +361,11 @@ build their own clients.
   if it needs it. Add a model-discovery endpoint in `server/manage/llm/api.py`
   if it can list models. Copy `web/src/sections/modals/languageModels/OpenRouterModal.tsx` for the admin
   modal; list
-  the modals with `ls web/src/sections/modals/languageModels/`.
+  the modals with `ls web/src/sections/modals/languageModels/`. A deployment
+  that sets `LLM_PROVIDER_ALLOWLIST` hides and refuses the new provider until
+  the list names it
+  (`backend/onyx/llm/well_known_providers/llm_provider_options.py:llm_provider_allowed`,
+  `web/src/views/admin/LanguageModelsPage.tsx:restrictProviderGroups`).
 - `new-task-designation` **A task designation.** Add the `LLMModelFlowType` value (see Known issues).
   Write the factory with an explicit no-default behaviour, and add the value to
   `_HIDDEN_DEFAULT_FLOW_TYPES` if the model must stay out of the picker. Copy
