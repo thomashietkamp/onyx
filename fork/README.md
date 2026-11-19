@@ -55,8 +55,8 @@ What Onyx does with it:
 
 ## LiteLLM Proxy
 
-`fork/litellm/` holds a LiteLLM Proxy that Onyx uses as one gateway to Azure
-OpenAI, Claude and self-hosted models. See `fork/litellm/README.md`.
+`fork/litellm/` holds a LiteLLM Proxy that Onyx uses as one gateway to
+Requesty, Azure OpenAI and self-hosted models. See `fork/litellm/README.md`.
 
 ## Known gaps
 

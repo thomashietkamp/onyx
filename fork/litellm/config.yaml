@@ -13,20 +13,42 @@ model_list:
     model_info:
       max_input_tokens: 128000
 
-  # Claude on Azure AI Foundry. AZURE_CLAUDE_MODEL is azure_ai/<deployment>,
-  # and the api_base is https://<resource>.services.ai.azure.com/anthropic.
+  # Requesty router (https://router.requesty.ai/v1), OpenAI-compatible.
+  # A model id is "<provider>/<model>[@region]", for example
+  # bedrock/claude-sonnet-5-5@eu-central-1 to keep requests in the EU. The
+  # full list: curl https://router.requesty.ai/v1/models
   - model_name: claude-sonnet
     litellm_params:
-      model: os.environ/AZURE_CLAUDE_MODEL
-      api_base: os.environ/AZURE_CLAUDE_API_BASE
-      api_key: os.environ/AZURE_CLAUDE_API_KEY
+      model: os.environ/REQUESTY_CLAUDE_SONNET_MODEL
+      api_base: https://router.requesty.ai/v1
+      api_key: os.environ/REQUESTY_API_KEY
     model_info:
-      max_input_tokens: 200000
+      max_input_tokens: 1000000
+      max_output_tokens: 128000
+
+  - model_name: claude-opus
+    litellm_params:
+      model: os.environ/REQUESTY_CLAUDE_OPUS_MODEL
+      api_base: https://router.requesty.ai/v1
+      api_key: os.environ/REQUESTY_API_KEY
+    model_info:
+      max_input_tokens: 1000000
+      max_output_tokens: 128000
+
+  # Claude on Azure AI Foundry. AZURE_CLAUDE_MODEL is azure_ai/<deployment>,
+  # and the api_base is https://<resource>.services.ai.azure.com/anthropic.
+  # - model_name: claude-sonnet-azure
+  #   litellm_params:
+  #     model: os.environ/AZURE_CLAUDE_MODEL
+  #     api_base: os.environ/AZURE_CLAUDE_API_BASE
+  #     api_key: os.environ/AZURE_CLAUDE_API_KEY
+  #   model_info:
+  #     max_input_tokens: 200000
 
   # Claude directly from Anthropic. Uncomment and set ANTHROPIC_API_KEY.
   # - model_name: claude-sonnet-anthropic
   #   litellm_params:
-  #     model: anthropic/claude-sonnet-4-5
+  #     model: anthropic/claude-sonnet-5-5
   #     api_key: os.environ/ANTHROPIC_API_KEY
 
   # A self-hosted model behind an OpenAI-compatible server (vLLM, Ollama,

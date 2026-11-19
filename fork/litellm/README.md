@@ -1,12 +1,12 @@
 # LiteLLM Proxy for Onyx
 
-One model gateway in front of Azure OpenAI, Claude and self-hosted models.
+One model gateway in front of Requesty, Azure OpenAI and self-hosted models.
 Onyx connects to it as the **LiteLLM Proxy** provider and reads its model
 list. To add a model later, change `config.yaml` only; Onyx needs no change.
 
 ```
-Onyx ──► LiteLLM Proxy (http://litellm:4000) ──► Azure OpenAI
-                                             ├──► Claude (Azure AI Foundry or Anthropic)
+Onyx ──► LiteLLM Proxy (http://litellm:4000) ──► Requesty (Claude and other models)
+                                             ├──► Azure OpenAI
                                              └──► self-hosted (vLLM, Ollama, ...)
 ```
 
@@ -34,9 +34,13 @@ proxy also gives rate limits, fallbacks and a cost overview per key.
      key after the first start.
    - **Azure OpenAI:** set the resource URL, the key, the API version and
      `AZURE_OPENAI_GPT4O_MODEL=azure/<deployment name>`.
-   - **Claude on Azure AI Foundry:** set
-     `AZURE_CLAUDE_API_BASE=https://<resource>.services.ai.azure.com/anthropic`,
-     the key and `AZURE_CLAUDE_MODEL=azure_ai/<deployment name>`.
+   - **Requesty:** set `REQUESTY_API_KEY`. `REQUESTY_CLAUDE_SONNET_MODEL` and
+     `REQUESTY_CLAUDE_OPUS_MODEL` are `openai/<Requesty model id>`. The
+     defaults use Bedrock in eu-central-1, so requests stay in the EU. To see
+     every id, run `curl https://router.requesty.ai/v1/models`.
+   - **Optional, Claude on Azure AI Foundry:** uncomment its block in
+     `config.yaml` and set `AZURE_CLAUDE_API_BASE`, the key and
+     `AZURE_CLAUDE_MODEL=azure_ai/<deployment name>`.
 
 2. In `config.yaml`, remove the model blocks you do not use. Uncomment the
    Anthropic or the self-hosted block if you need it. Onyx lists every
@@ -69,6 +73,13 @@ proxy also gives rate limits, fallbacks and a cost overview per key.
 
    Click **Refresh models**, pick the models, and click **Connect**.
 
+## Add a Requesty model
+
+Copy a Requesty block in `config.yaml` and give it a new `model_name`. Set
+`model: openai/<Requesty model id>`, for example
+`openai/vertex/gemini-4-neon`. LiteLLM has no Requesty provider of its own;
+the `openai/` prefix sends the call to Requesty's OpenAI-compatible API.
+
 ## Add a self-hosted model
 
 Run an OpenAI-compatible server, for example vLLM or Ollama. Then add a
@@ -95,6 +106,9 @@ container: put it in the same Compose project, or use its network address.
 - `turn_off_message_logging` keeps prompts and answers out of the proxy logs.
 - The image is pinned (`ghcr.io/berriai/litellm-database:v1.106.6`). To
   update, change the tag, then run `docker compose ... pull litellm`.
-- Not tested with real Azure or Anthropic keys. Tested: the proxy starts, its
-  key check works, Onyx reads the model list, and Onyx gets an answer through
-  the proxy from a self-hosted (OpenAI-compatible) model, streaming and not.
+- Not tested with real Azure or Requesty keys. Tested:
+  - the proxy starts and its key check works;
+  - Onyx reads the model list;
+  - a Requesty call reaches Requesty, which refused a test key;
+  - Onyx gets an answer through the proxy from a self-hosted
+    (OpenAI-compatible) model, streaming and not.
