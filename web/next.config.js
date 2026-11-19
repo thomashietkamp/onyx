@@ -10,6 +10,12 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig = {
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
+  // Hosts (comma-separated) that may load dev-server resources, for example a
+  // Tailscale name. Dev only; production builds ignore it.
+  allowedDevOrigins: (process.env.NEXT_ALLOWED_DEV_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   output: "standalone",
   typescript: {
     ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === "1",

@@ -53,6 +53,20 @@ What Onyx does with it:
 - The seeded Admin and Basic groups belong to Onyx; Entra cannot rename,
   change or delete them.
 
+## Open the dev stack from another device
+
+Serve the web port on your tailnet, and let the Next.js dev server accept
+that host:
+
+```bash
+tailscale serve --bg --https=3443 http://127.0.0.1:3000
+NEXT_ALLOWED_DEV_ORIGINS=<machine>.<tailnet>.ts.net ods --isolated stack restart
+```
+
+Without `NEXT_ALLOWED_DEV_ORIGINS` the dev server blocks its own scripts for
+that host, and the page stays white. Password login works over the tailnet.
+SSO needs `WEB_DOMAIN` set to the tailnet URL.
+
 ## LiteLLM Proxy
 
 `fork/litellm/` holds a LiteLLM Proxy that Onyx uses as one gateway to
