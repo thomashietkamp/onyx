@@ -32,9 +32,12 @@ build (`backend/tests/conftest.py:_ee_enabled`).
 
 ## Known gaps
 
-- **Secrets are stored as plain text.** The MIT `_encrypt_string` in
-  `backend/onyx/utils/encryption.py` does not encrypt. Connector credentials,
-  LLM API keys and OAuth tokens are readable in Postgres.
+- Secret encryption is this fork's own format (AES-256-GCM,
+  `backend/onyx/utils/encryption_keyring.py`). It reads the same settings as
+  upstream (`ENCRYPTION_KEY_SECRET`, `ENCRYPTION_KEYS`,
+  `ENCRYPTION_WRITE_KEY_ID`), but it cannot read ciphertext that upstream EE
+  wrote. After a key change, run `python -m scripts.encrypt_stored_secrets`.
+  That script covers encrypted database columns only.
 - Search mode (`web/src/sections/search/SearchUI.tsx`) and document search in
   the agent knowledge pane (`web/src/lib/search/documentSearch.ts`) are
   placeholders.

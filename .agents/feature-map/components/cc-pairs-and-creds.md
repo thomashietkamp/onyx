@@ -254,16 +254,15 @@ status page reads the same builders across every pair the caller can read
    `SensitiveValue.get_value(apply_mask=False)` returns.** It is the cached
    decrypted value, so a change desyncs the cache from the stored bytes. Copy it
    first.
-10. `encryption-needs-ee-code-and-key` **Secrets are encrypted only when EE code
-    is loaded and a write key is configured.** The write key is
-    `ENCRYPTION_WRITE_KEY_ID` (the envelope format, AES-GCM with a key id in
-    the header) or, when that is unset, `ENCRYPTION_KEY_SECRET` (the legacy
-    AES-CBC format). Both conditions are in
-    [[editions-and-gating]]. The column type name `EncryptedJson` does not mean
-    the bytes are encrypted. A change to
-    `utils/variable_functionality.py:set_is_ee_if_available`, to
-    `utils/variable_functionality.py:is_ee_available`, or to the `ee` copy in `backend/Dockerfile` changes
-    storage for every deployment.
+10. `encryption-needs-ee-code-and-key` **Secrets are encrypted only when a
+    write key is configured.** In this fork the MIT code encrypts
+    (`backend/onyx/utils/encryption_keyring.py`, AES-256-GCM with the key id
+    in an authenticated header). The write key is `ENCRYPTION_WRITE_KEY_ID`,
+    or `legacy` (derived from `ENCRYPTION_KEY_SECRET`) when that is unset.
+    Without either, values are plain text, and plain text stays readable after
+    a key is set. The column type name `EncryptedJson` does not mean the bytes
+    are encrypted: run `backend/scripts/encrypt_stored_secrets.py` after a key
+    change. The fork cannot read ciphertext that upstream EE wrote.
 11. `encrypted-state-outside-tables-needs-rotation` **Ciphertext stored outside
     an encrypted column is invisible to key rotation unless it is added to
     `ee/onyx/db/rotate_encryption_key.py:rotate_schema`.** A new `EncryptedString`

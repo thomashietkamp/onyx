@@ -79,7 +79,7 @@ covers new files that match it.
 | `backend/onyx/context/search/preprocessing/access_filters.py` | access-control |
 | `backend/onyx/secondary_llm_flows/`, `backend/ee/onyx/secondary_llm_flows/`, `backend/ee/onyx/db/search.py` | internal-search |
 | `backend/onyx/server/features/search/`, `backend/onyx/server/query_and_chat/query_backend.py`, `backend/ee/onyx/server/query_and_chat/`, `backend/ee/onyx/search/` | internal-search |
-| `web/src/ee/sections/SearchUI.tsx`, `web/src/ee/sections/SearchCard.tsx`, `web/src/ee/lib/search/`, `web/src/ee/providers/QueryControllerProvider.tsx`, `web/src/providers/QueryControllerProvider.tsx` | internal-search |
+| `web/src/ee/sections/SearchUI.tsx`, `web/src/ee/sections/SearchCard.tsx`, `web/src/ee/lib/search/`, `web/src/ee/providers/QueryControllerProvider.tsx`, `web/src/providers/QueryControllerProvider.tsx`, `web/src/sections/search/SearchUI.tsx`, `web/src/lib/search/documentSearch.ts` | internal-search |
 | `backend/onyx/document_index/` | document-index |
 | `backend/onyx/server/manage/opensearch_health/`, `web/src/lib/opensearch-health/`, `web/src/sections/banners/OpenSearchResourceWarning.tsx` | document-index |
 | `backend/onyx/natural_language_processing/` | document-index, internal-search |
@@ -123,7 +123,7 @@ covers new files that match it.
 | `backend/onyx/file_store/document_batch_storage.py`, `backend/onyx/db/targeted_reindex.py`, `backend/onyx/redis/redis_docprocessing.py` | indexing-pipeline |
 | `backend/onyx/db/connector.py`, `backend/onyx/db/credentials.py`, `backend/onyx/db/connector_credential_pair.py`, `backend/onyx/db/credential_capability.py`, `backend/ee/onyx/db/connector.py`, `backend/ee/onyx/db/credentials.py` | cc-pairs-and-creds |
 | `backend/onyx/db/cc_pair_runs.py`, `backend/onyx/db/cc_pair_runs_models.py`, `backend/onyx/db/cc_pair_run_resolution.py`, `backend/onyx/db/deletion_attempt.py` | cc-pairs-and-creds |
-| `backend/onyx/utils/encryption.py`, `backend/onyx/utils/sensitive.py`, `backend/ee/onyx/utils/encryption.py`, `backend/ee/onyx/db/rotate_encryption_key.py`, `backend/scripts/reencrypt_secrets.py`, `backend/scripts/decrypt.py` | cc-pairs-and-creds |
+| `backend/onyx/utils/encryption.py`, `backend/onyx/utils/encryption_keyring.py`, `backend/onyx/db/secret_reencryption.py`, `backend/scripts/encrypt_stored_secrets.py`, `backend/onyx/utils/sensitive.py`, `backend/ee/onyx/utils/encryption.py`, `backend/ee/onyx/db/rotate_encryption_key.py`, `backend/scripts/reencrypt_secrets.py`, `backend/scripts/decrypt.py` | cc-pairs-and-creds |
 | `backend/onyx/server/manage/administrative.py` | cc-pairs-and-creds, indexing-pipeline |
 | `backend/ee/onyx/server/oauth/` | cc-pairs-and-creds |
 | `backend/ee/onyx/server/documents/`, `backend/ee/onyx/db/connector_credential_pair.py` | cc-pairs-and-creds, permission-sync |

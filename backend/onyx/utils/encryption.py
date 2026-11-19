@@ -10,39 +10,68 @@ from onyx.configs.constants import MASK_CREDENTIAL_LONG_RE, MASK_CREDENTIAL_SHOR
 from onyx.connectors.google_utils.shared_constants import (
     DB_CREDENTIALS_AUTHENTICATION_METHOD,
 )
+from onyx.utils.encryption_keyring import (
+    EncryptionConfigError,
+    Keyring,
+    build_keyring,
+    seal,
+    unseal,
+)
 from onyx.utils.logger import setup_logger
 from onyx.utils.variable_functionality import fetch_versioned_implementation
 
 logger = setup_logger()
 
 
-# The MIT edition stores secrets as plain text and ignores every key setting.
-_ENCRYPTION_CONFIGURED = bool(
-    ENCRYPTION_KEY_SECRET or ENCRYPTION_KEYS_JSON or ENCRYPTION_WRITE_KEY_ID
-)
+def _load_keyring() -> tuple[Keyring | None, EncryptionConfigError | None]:
+    try:
+        keyring = build_keyring(
+            key_secret=ENCRYPTION_KEY_SECRET,
+            keys_json=ENCRYPTION_KEYS_JSON,
+            write_key_id=ENCRYPTION_WRITE_KEY_ID,
+        )
+    except EncryptionConfigError as e:
+        logger.error("Encryption settings are unusable: %s", e)
+        return None, e
+    return keyring, None
+
+
+# Built once from the settings. `_validate_encryption_configuration` stops a
+# process at startup when the settings are unusable.
+_KEYRING, _KEYRING_ERROR = _load_keyring()
+
+
+def _require_keyring() -> Keyring:
+    if _KEYRING is None:
+        raise EncryptionConfigError(
+            f"Encryption settings are unusable: {_KEYRING_ERROR}"
+        )
+    return _KEYRING
 
 
 # IMPORTANT DO NOT DELETE, THIS IS USED BY fetch_versioned_implementation
 def _encrypt_string(input_str: str) -> bytes:
-    if _ENCRYPTION_CONFIGURED:
-        logger.warning("MIT version of Onyx does not support encryption of secrets.")
-    return input_str.encode()
+    return seal(_require_keyring(), input_str)
 
 
 # IMPORTANT DO NOT DELETE, THIS IS USED BY fetch_versioned_implementation
 def _decrypt_bytes(input_bytes: bytes) -> str:
-    if _ENCRYPTION_CONFIGURED:
-        logger.warning("MIT version of Onyx does not support decryption of secrets.")
-    return input_bytes.decode()
+    return unseal(_require_keyring(), input_bytes)
 
 
 # IMPORTANT DO NOT DELETE, THIS IS USED BY fetch_versioned_implementation
 def _validate_encryption_configuration() -> None:
-    if _ENCRYPTION_CONFIGURED:
+    keyring = _require_keyring()
+    if not keyring.encrypts:
         logger.warning(
-            "ENCRYPTION_KEY_SECRET, ENCRYPTION_KEYS or ENCRYPTION_WRITE_KEY_ID is set, "
-            "but the MIT version of Onyx stores secrets as plain text."
+            "No encryption key is set (ENCRYPTION_KEY_SECRET or "
+            "ENCRYPTION_WRITE_KEY_ID), so new secrets are stored as plain text."
         )
+
+
+def current_write_key_id() -> str | None:
+    """The key id that new values are encrypted under; None means plain text."""
+    return _require_keyring().write_key_id
 
 
 def mask_string(sensitive_str: str) -> str:

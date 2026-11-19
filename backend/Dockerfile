@@ -200,6 +200,7 @@ COPY --chown=onyx:onyx ./keys /app/keys
 COPY --chown=onyx:onyx ./scripts/debugging /app/scripts/debugging
 COPY --chown=onyx:onyx ./scripts/force_delete_connector_by_id.py /app/scripts/force_delete_connector_by_id.py
 COPY --chown=onyx:onyx ./scripts/supervisord_entrypoint.sh /app/scripts/supervisord_entrypoint.sh
+COPY --chown=onyx:onyx ./scripts/encrypt_stored_secrets.py /app/scripts/encrypt_stored_secrets.py
 COPY --chown=onyx:onyx ./scripts/rotate_llm_provider_keys.py /app/scripts/rotate_llm_provider_keys.py
 COPY --chown=onyx:onyx ./scripts/craft_fc_smoke.py /app/scripts/craft_fc_smoke.py
 RUN chmod +x /app/scripts/supervisord_entrypoint.sh
