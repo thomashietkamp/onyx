@@ -184,6 +184,8 @@ class UserSettings(Settings):
     hide_onyx_branding: bool = False
     # True when hooks are available: single-tenant EE deployments only.
     hooks_enabled: bool = False
+    # Chat provider names an admin may set up; empty means every provider.
+    llm_provider_allowlist: list[str] = Field(default_factory=list)
     # True on the playground deployment (IS_PLAYGROUND env var). The web app
     # reads this instead of a build-time flag, so cloud and playground share
     # one web image.

@@ -74,6 +74,13 @@ proxy also gives rate limits, fallbacks and a cost overview per key.
 
    Click **Refresh models**, pick the models, and click **Connect**.
 
+## Allow only the proxy in Onyx
+
+Set `LLM_PROVIDER_ALLOWLIST=litellm_proxy` for the API server (in the env file
+of your deployment, or `.vscode/.env` for the dev stack) and restart it. Admin
+> Language Models then shows only the LiteLLM Proxy card, and the API refuses
+other providers. A self-hosted model then also goes through the proxy.
+
 ## Add a Requesty model
 
 Copy a Requesty block in `config.yaml` and give it a new `model_name`. Set

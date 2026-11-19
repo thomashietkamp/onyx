@@ -64,7 +64,9 @@ NEXT_ALLOWED_DEV_ORIGINS=<machine>.<tailnet>.ts.net ods --isolated stack restart
 ```
 
 Without `NEXT_ALLOWED_DEV_ORIGINS` the dev server blocks its own scripts for
-that host, and the page stays white. Password login works over the tailnet.
+that host, and the page stays white. If every page stays white after
+`ods stack restart`, even on localhost, the dev cache is stale: run
+`ods --isolated stack stop`, delete `web/.next/dev`, then `ods --isolated stack up`. Password login works over the tailnet.
 SSO needs `WEB_DOMAIN` set to the tailnet URL.
 
 ## LiteLLM Proxy

@@ -4,6 +4,7 @@ import threading
 import time
 from collections.abc import Callable
 
+from onyx.configs.app_configs import LLM_PROVIDER_ALLOWLIST
 from onyx.llm.api_surfaces import resolve_api_surface
 from onyx.llm.constants import (
     PROVIDER_DISPLAY_NAMES,
@@ -254,11 +255,18 @@ def model_configurations_for_provider(
     ]
 
 
+def llm_provider_allowed(provider_name: str) -> bool:
+    """False when ``LLM_PROVIDER_ALLOWLIST`` is set and does not name it."""
+    return not LLM_PROVIDER_ALLOWLIST or provider_name in LLM_PROVIDER_ALLOWLIST
+
+
 def fetch_available_well_known_llms() -> list[WellKnownLLMProviderDescriptor]:
     llm_recommendations = get_recommendations()
 
     well_known_llms = []
     for provider_name in WELL_KNOWN_PROVIDER_NAMES:
+        if not llm_provider_allowed(provider_name):
+            continue
         model_configurations = model_configurations_for_provider(
             provider_name, llm_recommendations
         )

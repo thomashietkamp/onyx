@@ -63,8 +63,7 @@ import CostOverridesPanel from "@/views/admin/CostOverridesPanel";
 
 // Settings toggles that gate per-chat model controls in the model picker.
 type ChatControlKey =
-  | "reasoning_override_enabled"
-  | "temperature_override_enabled";
+  "reasoning_override_enabled" | "temperature_override_enabled";
 
 const route = ADMIN_ROUTES.LLM_MODELS;
 
@@ -85,6 +84,24 @@ interface ProviderGroup {
   providerNames: string[];
   // Append the custom-provider card to this group.
   includeCustom?: boolean;
+}
+
+/** Keeps only the allowed providers, drops empty groups, and hides the
+ *  custom-provider cards, which can name any provider. */
+export function restrictProviderGroups(
+  groups: ProviderGroup[],
+  allowlist: readonly string[] | undefined,
+): ProviderGroup[] {
+  if (!allowlist || allowlist.length === 0) return groups;
+  return groups
+    .map((group) => ({
+      ...group,
+      providerNames: group.providerNames.filter((name) =>
+        allowlist.includes(name),
+      ),
+      includeCustom: false,
+    }))
+    .filter((group) => group.providerNames.length > 0);
 }
 
 // ============================================================================
@@ -113,7 +130,7 @@ function ExistingProviderCard({
   const isPaged = provider.next_model_configuration_offset != null;
   const { llmProvider: fetchedProvider, error: fullProviderError } =
     useAdminLanguageModel(
-      providerModal.isPresent && isPaged ? provider.id : null
+      providerModal.isPresent && isPaged ? provider.id : null,
     );
   const fullProvider = isPaged ? fetchedProvider : provider;
   useEffect(() => {
@@ -124,7 +141,7 @@ function ExistingProviderCard({
           fullProviderError instanceof Error
             ? fullProviderError.message
             : t("toasts.unknownError"),
-      })
+      }),
     );
     setIsOpen(false);
     // Drop the cached failure so the next open fetches again instead of
@@ -185,7 +202,7 @@ function ExistingProviderCard({
                   {markdown(
                     t("deleteModal.description", {
                       provider: displayName,
-                    })
+                    }),
                   )}
                 </Text>
                 {isLastProvider && (
@@ -412,14 +429,14 @@ export default function LanguageModelsPage() {
     modelPaging,
   } = useAdminLanguageModels();
   const isConfigurationDisabled = usePHFeatureFlag(
-    PHFeatureFlag.LANGUAGE_MODEL_CONFIGURATION_DISABLED
+    PHFeatureFlag.LANGUAGE_MODEL_CONFIGURATION_DISABLED,
   );
 
   // Hide the toggle unless the selector would group: several providers, or
   // one aggregator provider whose models span several vendors.
   const hasProviderGrouping = useMemo(
     () => groupLlmOptions(buildLlmOptions(existingLlmProviders)).length > 1,
-    [existingLlmProviders]
+    [existingLlmProviders],
   );
 
   // Includes hidden and persona-restricted routers, unlike the paged listings.
@@ -439,7 +456,7 @@ export default function LanguageModelsPage() {
             mc.custom_display_name || mc.display_name || mc.name,
         })),
       }));
-    }
+    },
   );
 
   const routerProvidersLoading =
@@ -457,11 +474,11 @@ export default function LanguageModelsPage() {
   const defaultModelConfigId = useMemo(() => {
     if (!defaultText || !existingLlmProviders) return null;
     const provider = existingLlmProviders.find(
-      (p) => p.id === defaultText.provider_id
+      (p) => p.id === defaultText.provider_id,
     );
     return (
       provider?.model_configurations.find(
-        (m) => m.name === defaultText.model_name
+        (m) => m.name === defaultText.model_name,
       )?.id ?? null
     );
   }, [defaultText, existingLlmProviders]);
@@ -506,11 +523,16 @@ export default function LanguageModelsPage() {
         includeCustom: true,
       },
     ],
-    [t, settings.appName]
+    [t, settings.appName],
+  );
+  const visibleProviderGroups = useMemo(
+    () =>
+      restrictProviderGroups(providerGroups, settings.llm_provider_allowlist),
+    [providerGroups, settings.llm_provider_allowlist],
   );
 
   const chatProviders = (existingLlmProviders ?? []).filter(
-    (provider) => !getProvider(provider.provider).decisionOnly
+    (provider) => !getProvider(provider.provider).decisionOnly,
   );
   const hasProviders = chatProviders.length > 0;
   const chatProviderCount = chatProviders.length;
@@ -553,7 +575,7 @@ export default function LanguageModelsPage() {
       await mutate(SWR_KEYS.settings);
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : t("toasts.settingsUpdateFailed")
+        e instanceof Error ? e.message : t("toasts.settingsUpdateFailed"),
       );
     } finally {
       setPendingHideGrouping(null);
@@ -562,7 +584,7 @@ export default function LanguageModelsPage() {
 
   async function handleChatControlChange(
     key: ChatControlKey,
-    checked: boolean
+    checked: boolean,
   ) {
     if (pendingChatControls[key] !== undefined) return;
     setPendingChatControls((prev) => ({ ...prev, [key]: checked }));
@@ -571,7 +593,7 @@ export default function LanguageModelsPage() {
       await mutate(SWR_KEYS.settings);
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : t("toasts.settingsUpdateFailed")
+        e instanceof Error ? e.message : t("toasts.settingsUpdateFailed"),
       );
     } finally {
       setPendingChatControls((prev) => {
@@ -601,7 +623,7 @@ export default function LanguageModelsPage() {
     routingEnabled &&
     routerProviders !== undefined &&
     !routerProviders.some((provider) =>
-      provider.model_configurations.some((mc) => mc.id === routingTargetId)
+      provider.model_configurations.some((mc) => mc.id === routingTargetId),
     );
 
   async function handleRoutingEnabledChange(checked: boolean) {
@@ -612,7 +634,7 @@ export default function LanguageModelsPage() {
       await mutate(SWR_KEYS.settings);
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : t("toasts.settingsUpdateFailed")
+        e instanceof Error ? e.message : t("toasts.settingsUpdateFailed"),
       );
     } finally {
       setPendingRoutingEnabled(null);
@@ -620,7 +642,7 @@ export default function LanguageModelsPage() {
   }
 
   async function handleRoutingTargetChange(
-    modelConfigurationId: number | null
+    modelConfigurationId: number | null,
   ) {
     if (pendingRoutingTarget !== null) return;
     setPendingRoutingTarget({ id: modelConfigurationId });
@@ -635,7 +657,7 @@ export default function LanguageModelsPage() {
       ]);
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : t("toasts.settingsUpdateFailed")
+        e instanceof Error ? e.message : t("toasts.settingsUpdateFailed"),
       );
     } finally {
       setPendingRoutingTarget(null);
@@ -663,7 +685,7 @@ export default function LanguageModelsPage() {
                 <SimpleModelSelector
                   providers={filterModelConfigurations(
                     existingLlmProviders ?? [],
-                    { keep: defaultModelConfigId }
+                    { keep: defaultModelConfigId },
                   )}
                   value={defaultModelConfigId}
                   grouped={
@@ -673,7 +695,7 @@ export default function LanguageModelsPage() {
                   onChange={(modelConfigurationId) => {
                     const opt = findLlmOptionById(
                       existingLlmProviders,
-                      modelConfigurationId
+                      modelConfigurationId,
                     );
                     // Keyed on the model configuration id. Matching on provider
                     // type plus display name picks the first of several
@@ -683,11 +705,11 @@ export default function LanguageModelsPage() {
                     // also hosts a model of that name, so this failed silently.
                     const provider = findProviderOwningModelConfig(
                       existingLlmProviders,
-                      modelConfigurationId
+                      modelConfigurationId,
                     );
                     if (provider && opt) {
                       void handleDefaultModelChange(
-                        `${provider.id}:${opt.modelName}`
+                        `${provider.id}:${opt.modelName}`,
                       );
                     }
                   }}
@@ -787,7 +809,7 @@ export default function LanguageModelsPage() {
                   onCheckedChange={(checked) => {
                     void handleChatControlChange(
                       "reasoning_override_enabled",
-                      checked
+                      checked,
                     );
                   }}
                 />
@@ -810,7 +832,7 @@ export default function LanguageModelsPage() {
                   onCheckedChange={(checked) => {
                     void handleChatControlChange(
                       "temperature_override_enabled",
-                      checked
+                      checked,
                     );
                   }}
                 />
@@ -881,7 +903,7 @@ export default function LanguageModelsPage() {
         {/* ── Add Provider groups (always visible) ── */}
         <Disabled disabled={isConfigurationDisabled}>
           <div className="flex flex-col gap-8">
-            {providerGroups.map((group) => (
+            {visibleProviderGroups.map((group) => (
               <Section
                 key={group.id}
                 gap={3}

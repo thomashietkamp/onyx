@@ -127,6 +127,8 @@ export interface Settings {
 
   // True when hooks are available: single-tenant deployments only.
   hooks_enabled?: boolean;
+  /** Chat provider names an admin may set up; empty means every provider. */
+  llm_provider_allowlist?: string[];
 
   // True on the playground deployment (IS_PLAYGROUND env var on the server).
   is_playground?: boolean;

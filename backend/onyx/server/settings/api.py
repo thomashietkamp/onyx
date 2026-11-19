@@ -11,6 +11,7 @@ from onyx.configs.app_configs import (
     DEFAULT_USER_FILE_MAX_UPLOAD_SIZE_MB,
     DISABLE_VECTOR_DB,
     HIDE_ONYX_BRANDING,
+    LLM_PROVIDER_ALLOWLIST,
     MAX_ALLOWED_UPLOAD_SIZE_MB,
     POSTHOG_API_KEY,
     POSTHOG_HOST,
@@ -262,6 +263,7 @@ def fetch_settings(
         hide_onyx_branding=HIDE_ONYX_BRANDING
         and tier_at_least(resolved_tier, Tier.ENTERPRISE),
         hooks_enabled=not MULTI_TENANT,
+        llm_provider_allowlist=sorted(LLM_PROVIDER_ALLOWLIST),
         is_playground=IS_PLAYGROUND,
         version=onyx_version,
         commit=build_info.commit,

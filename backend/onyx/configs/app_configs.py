@@ -84,6 +84,13 @@ HIDE_ONYX_BRANDING = os.environ.get("HIDE_ONYX_BRANDING", "").lower() == "true"
 # An admin must send this value to change the custom analytics script. Unset,
 # nobody can change it.
 CUSTOM_ANALYTICS_SECRET_KEY = os.environ.get("CUSTOM_ANALYTICS_SECRET_KEY") or None
+# Provider names (comma-separated, e.g. "litellm_proxy") that admins may set
+# up for chat. Empty means every provider. Others are hidden and refused.
+LLM_PROVIDER_ALLOWLIST: frozenset[str] = frozenset(
+    name.strip()
+    for name in (os.environ.get("LLM_PROVIDER_ALLOWLIST") or "").split(",")
+    if name.strip()
+)
 
 # TEMPORARY (will be removed soon): operator-forced Search-UI scope (self-hosted only) —
 # comma-separated document set NAMES. When set, the Onyx Search UI is restricted to those sets

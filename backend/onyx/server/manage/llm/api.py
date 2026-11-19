@@ -102,6 +102,7 @@ from onyx.llm.well_known_providers.constants import (
 from onyx.llm.well_known_providers.llm_provider_options import (
     WellKnownLLMProviderDescriptor,
     fetch_available_well_known_llms,
+    llm_provider_allowed,
 )
 from onyx.llm.well_known_providers.typesafe import (
     fetch_typesafe_models,
@@ -1082,6 +1083,12 @@ def put_llm_provider(
     # validate request (e.g. if we're intending to create but the name already exists we should throw an error)
     # NOTE: may involve duplicate fetching to Postgres, but we're assuming SQLAlchemy is smart enough to cache
     # the result
+    if not llm_provider_allowed(llm_provider_upsert_request.provider):
+        raise OnyxError(
+            OnyxErrorCode.INVALID_INPUT,
+            f"Provider '{llm_provider_upsert_request.provider}' is not allowed on "
+            "this deployment (LLM_PROVIDER_ALLOWLIST).",
+        )
     existing_provider = None
     if llm_provider_upsert_request.id:
         existing_provider = fetch_existing_llm_provider_by_id(
