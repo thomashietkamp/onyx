@@ -224,6 +224,7 @@ and the actor is the provisioning token (`auth_type: "scim"`). SCIM emits an eve
 | `api_key.create` / `.regenerate` / `.update` / `.delete` | An API key is created, regenerated, updated, or revoked | `api_key` | API-key id | |
 | `credential.create` / `.update` / `.delete` | A stored credential is created, updated, or deleted | `credential` | credential id | `source` (on create) |
 | `settings.craft_default_change` | The workspace default for Craft access changes | — | — | |
+| `settings.branding_change` | An admin changes the branding settings or uploads or removes a logo. `extra.change` names the change | `settings` | — | |
 | `search_settings.contextual_rag_model_update` | The contextual retrieval model changes | — | — | |
 | `search_settings.cc_pair_access_mode_change` | A connector's access type changes | `cc_pair` | connector-credential-pair id | |
 | `permission.denied` | A scoped permission gate refuses a write | — | — | `gate` (`within_scope`, `manages_group`, or `global_only`); `outcome` is `denied` |

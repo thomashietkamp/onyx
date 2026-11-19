@@ -73,6 +73,8 @@ from onyx.server.auth.captcha_api import CaptchaCookieMiddleware, LoginCaptchaMi
 from onyx.server.auth.captcha_api import router as captcha_router
 from onyx.server.auth.mobile import router as mobile_auth_router
 from onyx.server.auth_check import check_router_auth
+from onyx.server.branding.api import admin_router as branding_admin_router
+from onyx.server.branding.api import public_router as branding_public_router
 from onyx.server.documents.cc_pair import router as cc_pair_router
 from onyx.server.documents.connector import router as connector_router
 from onyx.server.documents.connector_edit import router as connector_edit_router
@@ -645,6 +647,10 @@ def get_application(lifespan_override: Lifespan | None = None) -> FastAPI:
     include_router_with_global_prefix_prepended(application, onyx_api_router)
     include_router_with_global_prefix_prepended(application, settings_router)
     include_router_with_global_prefix_prepended(application, settings_admin_router)
+    # Upstream EE serves the same paths when its code is loaded.
+    if not global_version.is_ee_version():
+        include_router_with_global_prefix_prepended(application, branding_public_router)
+        include_router_with_global_prefix_prepended(application, branding_admin_router)
     include_router_with_global_prefix_prepended(application, security_admin_router)
     include_router_with_global_prefix_prepended(application, sso_admin_router)
     include_router_with_global_prefix_prepended(application, llm_admin_router)

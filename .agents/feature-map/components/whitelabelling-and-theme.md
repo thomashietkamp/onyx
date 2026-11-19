@@ -6,9 +6,11 @@
 > because the login page needs the branding before any user is known.
 
 **Verified against:** `73e0ae3c31` (2026-10-28)
-**Edition:** EE writes the settings and hosts the admin page. CE frontend code
-(`useSettings`, `Logo`) reads and renders them, and treats a missing EE route as
-"no branding".
+**Edition:** In this fork, MIT code owns all of it:
+`backend/onyx/server/branding/` serves the same routes as upstream EE, and
+`web/src/views/admin/BrandingPage.tsx` is the admin page. The `ee/` paths
+below describe upstream. `useSettings` and `Logo` read and render the
+settings, and treat a 404 as "no branding".
 
 ---
 
@@ -27,11 +29,9 @@
   the name "Onyx". Every field falls back to a default. Nothing shows broken.
 - **"Powered by Onyx"** is not an admin setting. An operator hides it with the
   `HIDE_ONYX_BRANDING` env var. It works only on the Enterprise tier.
-- **A CE workspace** has no theme page. A visit to `/admin/theme` redirects to
-  the app with a message. The backend holds the admin settings API at the
-  Business tier, and the custom analytics script and SCIM token routes under
-  it at Enterprise ([[editions-and-gating]]). A lower tier gets a "requires the
-  plan" error.
+- **In this fork** every admin has the theme page, with no tier check. It has
+  no custom analytics script, logotype upload or banner editor yet.
+  Upstream holds the page at the Business tier ([[editions-and-gating]]).
 - **The banner API is not tier-gated.** The banner editor is on the theme page,
   but a CE admin can set a banner through the API ([[notifications]]).
 
@@ -79,9 +79,14 @@ branding in the first HTML call `web/src/lib/settings/svcSS.ts:fetchSettingsSS`.
 Backend email and usage-report code reads `load_runtime_settings`, which fills
 in the default application name.
 
-**Admin page gating.** `web/src/proxy.ts:EE_ROUTES` always rewrites
-`/admin/theme` to `/ee/admin/theme`. `web/src/app/ee/layout.tsx` gates the page
-on `ee_features_enabled`. There is no CE copy of the page.
+**Fork implementation.** `backend/onyx/server/branding/store.py` keeps the
+settings under `KV_BRANDING_SETTINGS_KEY` (not the upstream key) and the logos
+as fixed file ids. The `use_custom_logo` flags follow the stored files. The
+admin page reads the length caps from `GET /admin/enterprise-settings/limits`,
+so the caps exist only in `backend/onyx/server/branding/models.py`. Links (help
+link, nav items) must be `http(s)` or, for nav items, an app path, because the
+public settings render them as `href`. `backend/onyx/main.py` registers the
+routes only when EE code is not loaded.
 
 **False lead.** `createLogoIcon` in `web/src/components/icons/icons.tsx` builds
 static connector and service icons. It does not render the uploaded logo.

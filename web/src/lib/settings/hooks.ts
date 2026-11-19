@@ -13,7 +13,6 @@ import {
   QueryHistoryType,
   Settings,
 } from "@/lib/settings/types";
-import { EE_ENABLED } from "@/lib/constants";
 import { DEFAULT_LOCALE } from "@/i18n/config";
 
 const SETTINGS_ERROR_RETRY_INTERVAL = 5_000;
@@ -82,19 +81,15 @@ export function useSettings(): AppSettings {
   );
 
   const core = rawSettings ?? DEFAULT_SETTINGS;
-  // Auth pages need branding pre-sign-in but standard web images lack the EE
-  // flag, so probe the endpoint.
-  const shouldFetchEnterprise =
-    EE_ENABLED ||
-    onAuthPath ||
-    (!settingsLoading && !settingsError && core.ee_features_enabled !== false);
+  // This build serves branding from MIT code, so it is always fetched. A 404
+  // (an older backend) still means "no branding".
 
   const {
     data: enterprise,
     error: enterpriseError,
     isLoading: enterpriseLoading,
   } = useSWR<EnterpriseSettings>(
-    shouldFetchEnterprise ? SWR_KEYS.enterpriseSettings : null,
+    SWR_KEYS.enterpriseSettings,
     errorHandlingFetcher,
     {
       revalidateOnFocus: false,
@@ -124,8 +119,7 @@ export function useSettings(): AppSettings {
       : null,
     vectorDbEnabled:
       !settingsLoading && !settingsError && core.vector_db_enabled !== false,
-    isLoading:
-      settingsLoading || (shouldFetchEnterprise ? enterpriseLoading : false),
+    isLoading: settingsLoading || enterpriseLoading,
     error:
       settingsError ??
       (isEnterpriseSettingsMissing(enterpriseError)

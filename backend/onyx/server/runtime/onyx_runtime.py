@@ -23,9 +23,9 @@ from onyx.configs.constants import (
     CacheBackendType,
 )
 from onyx.file_store.file_store import get_default_file_store
+from onyx.server.branding.store import LogoKind, logo_file_id
 from onyx.utils.file import FileWithMimeType, OnyxStaticFileManager
 from onyx.utils.logger import setup_logger
-from onyx.utils.variable_functionality import fetch_ee_implementation_or_noop
 
 logger = setup_logger()
 
@@ -68,9 +68,7 @@ class OnyxRuntime:
     def get_logo() -> FileWithMimeType:
         STATIC_FILENAME = "static/images/logo.png"
 
-        db_filename: str | None = fetch_ee_implementation_or_noop(
-            "onyx.server.enterprise_settings.store", "get_logo_filename", None
-        )
+        db_filename = logo_file_id(LogoKind.LOGO)
 
         return OnyxRuntime._get_with_static_fallback(db_filename, STATIC_FILENAME)
 
@@ -101,9 +99,7 @@ class OnyxRuntime:
     def get_logotype() -> FileWithMimeType:
         STATIC_FILENAME = "static/images/logotype.png"
 
-        db_filename: str | None = fetch_ee_implementation_or_noop(
-            "onyx.server.enterprise_settings.store", "get_logotype_filename", None
-        )
+        db_filename = logo_file_id(LogoKind.LOGOTYPE)
 
         return OnyxRuntime._get_with_static_fallback(db_filename, STATIC_FILENAME)
 

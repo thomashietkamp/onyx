@@ -120,6 +120,9 @@ KV_GEN_AI_KEY_CHECK_TIME = "genai_api_key_last_check_time"
 KV_SETTINGS_KEY = "onyx_settings"
 KV_CUSTOMER_UUID_KEY = "customer_uuid"
 KV_ENTERPRISE_SETTINGS_KEY = "onyx_enterprise_settings"
+# Branding settings of this fork (onyx/server/branding). Kept apart from the
+# upstream EE key because the stored shapes may differ.
+KV_BRANDING_SETTINGS_KEY = "onyx_fork_branding_settings"
 KV_CUSTOM_ANALYTICS_SCRIPT_KEY = "__custom_analytics_script__"
 KV_KG_CONFIG_KEY = "kg_config"
 KV_CC_PAIR_IDS_BACKFILL_PROGRESS_KEY = "opensearch_cc_pair_ids_backfill_progress"

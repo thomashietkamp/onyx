@@ -111,7 +111,6 @@ const EE_ROUTES = [
   "/admin/spending-limits",
   "/admin/performance/analytics",
   "/admin/performance/query-history",
-  "/admin/theme",
   "/admin/performance/custom-analytics",
   "/admin/standard-answer",
   "/admin/export-logs",

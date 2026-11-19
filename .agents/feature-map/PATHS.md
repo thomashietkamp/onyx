@@ -198,7 +198,7 @@ covers new files that match it.
 | `backend/ee/onyx/server/tenants/billing.py`, `backend/ee/onyx/server/tenants/billing_api.py`, `backend/ee/onyx/server/tenants/control_plane_api.py`, `backend/ee/onyx/server/tenants/tier_management.py` | billing |
 | `backend/ee/onyx/utils/tier.py`, `backend/ee/onyx/server/settings/` | billing, editions-and-gating |
 | `backend/ee/onyx/db/community_downgrade.py` | billing |
-| `backend/ee/onyx/server/enterprise_settings/` | whitelabelling-and-theme |
+| `backend/ee/onyx/server/enterprise_settings/`, `backend/onyx/server/branding/` | whitelabelling-and-theme |
 | `backend/ee/onyx/db/standard_answer.py`, `backend/ee/onyx/server/manage/standard_answer.py`, `backend/ee/onyx/onyxbot/slack/handlers/handle_standard_answers.py`, `backend/ee/onyx/server/query_and_chat/query_backend.py` | standard-answers |
 | `backend/onyx/db/notification.py`, `backend/onyx/db/release_notes.py`, `backend/onyx/db/admin_banner.py`, `backend/onyx/server/features/notifications/`, `backend/onyx/server/features/release_notes/`, `backend/onyx/server/features/admin_banner/`, `backend/onyx/db/connector_alerts.py` | notifications |
 | `backend/ee/onyx/utils/license_notifications.py` | notifications |
@@ -363,7 +363,7 @@ covers new files that match it.
 | `web/src/app/ee/admin/performance/`, `web/src/app/ee/admin/export-logs/`, `web/src/app/admin/tracing/`, `web/src/app/admin/systeminfo/`, `web/src/views/admin/TracingPage/`, `web/src/views/admin/WorkspaceAnalyticsPage/`, `web/src/views/admin/CostOverridesPanel.tsx`, `web/src/views/admin/PerUserUsagePanel.tsx`, `web/src/views/admin/SystemUsagePanel.tsx` | observability |
 | `web/src/sections/usage/`, `web/src/lib/usage/`, `web/src/lib/tracing/` | observability |
 | `web/src/lib/analytics/` | observability, editions-and-gating |
-| `web/src/app/ee/admin/theme/`, `web/src/lib/app/components/Logo.tsx`, `web/src/lib/app/components/LanguageSelect.tsx`, `web/src/lib/analytics/shared.tsx` | whitelabelling-and-theme |
+| `web/src/app/ee/admin/theme/`, `web/src/app/admin/theme/`, `web/src/views/admin/BrandingPage.tsx`, `web/src/lib/settings/brandingSvc.ts`, `web/src/lib/app/components/Logo.tsx`, `web/src/lib/app/components/LanguageSelect.tsx`, `web/src/lib/analytics/shared.tsx` | whitelabelling-and-theme |
 | `web/src/app/admin/web-search/`, `web/src/views/admin/WebSearchPage/`, `web/src/lib/webSearch/` | web-search |
 | `web/src/app/admin/image-generation/`, `web/src/views/admin/ImageGenerationPage/` | image-generation |
 | `web/src/app/admin/code-interpreter/`, `web/src/views/admin/CodeInterpreterPage/`, `web/src/hooks/useCodeInterpreter.ts` | code-execution |

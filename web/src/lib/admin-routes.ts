@@ -428,7 +428,7 @@ export const ADMIN_ROUTES = {
     sidebarLabel: "Appearance & Theming",
     requiredPermission: Permission.FULL_ADMIN_PANEL_ACCESS,
     section: "Organization",
-    requiredTier: Tier.BUSINESS,
+    requiredTier: null,
     visibleWhen: null,
   },
   SECURITY_HARDENING: {
