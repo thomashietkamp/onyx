@@ -54,6 +54,51 @@ _SOURCE_TO_SYNC_CONFIG: dict[DocumentSource, SyncConfig] = {
     DocumentSource.TEAMS: SyncConfig(group_sync=f"{_MICROSOFT}:teams_group_sync"),
     # Mail readers are people, never groups.
     DocumentSource.OUTLOOK: SyncConfig(),
+    DocumentSource.GMAIL: SyncConfig(),
+    DocumentSource.GOOGLE_DRIVE: SyncConfig(
+        group_sync="onyx.external_permissions.google_drive.group_sync:gdrive_group_sync"
+    ),
+    # Indexing does not read permissions (no CheckpointedConnectorWithPermSync).
+    DocumentSource.CONFLUENCE: SyncConfig(
+        initial_index_should_sync=False,
+        group_sync="onyx.external_permissions.confluence.group_sync:confluence_group_sync",
+    ),
+    # Channel access resolves to single users.
+    DocumentSource.SLACK: SyncConfig(),
+    DocumentSource.GITHUB: SyncConfig(
+        group_sync="onyx.external_permissions.github.group_sync:github_group_sync"
+    ),
+    DocumentSource.BOX: SyncConfig(
+        group_sync="onyx.external_permissions.box.group_sync:box_group_sync"
+    ),
+    DocumentSource.CANVAS: SyncConfig(
+        group_sync="onyx.external_permissions.canvas.group_sync:canvas_group_sync"
+    ),
+    DocumentSource.EGNYTE: SyncConfig(
+        group_sync="onyx.external_permissions.egnyte.group_sync:egnyte_group_sync"
+    ),
+    DocumentSource.LINEAR: SyncConfig(
+        initial_index_should_sync=False,
+        group_sync="onyx.external_permissions.linear.group_sync:linear_group_sync",
+    ),
+    DocumentSource.YOUTRACK: SyncConfig(
+        initial_index_should_sync=False,
+        group_sync="onyx.external_permissions.youtrack.group_sync:youtrack_group_sync",
+    ),
+    DocumentSource.AZURE_DATALAKE: SyncConfig(
+        initial_index_should_sync=False,
+        group_sync=(
+            "onyx.external_permissions.azure_datalake.group_sync:"
+            "azure_datalake_group_sync"
+        ),
+    ),
+    DocumentSource.ZOOM: SyncConfig(
+        group_sync="onyx.external_permissions.zoom.group_sync:zoom_group_sync"
+    ),
+    DocumentSource.HUBSPOT: SyncConfig(initial_index_should_sync=False),
+    # Not listed: JIRA (issue security levels are not read, so every issue
+    # would get its project's access) and SALESFORCE (records need
+    # post-query censoring, which this fork does not have).
 }
 
 

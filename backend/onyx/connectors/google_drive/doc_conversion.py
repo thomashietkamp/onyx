@@ -674,7 +674,6 @@ def convert_drive_item_to_document(
     allow_images: bool,
     size_threshold: int,
     # if not specified, we will not sync permissions
-    # will also be a no-op if EE is not enabled
     permission_sync_context: PermissionSyncContext | None,
     retriever_emails: list[str],
     file: GoogleDriveFileType,
@@ -833,7 +832,6 @@ def _convert_drive_item_to_document(
     retriever_email: str,
     file: GoogleDriveFileType,
     # if not specified, we will not sync permissions
-    # will also be a no-op if EE is not enabled
     permission_sync_context: PermissionSyncContext | None,
     raw_file_callback: RawFileCallback | None = None,
 ) -> Document | ConnectorFailure | None:
@@ -976,7 +974,6 @@ def build_slim_document(
     ops: GoogleDriveSourceOperations,
     file: GoogleDriveFileType,
     # if not specified, we will not sync permissions
-    # will also be a no-op if EE is not enabled
     permission_sync_context: PermissionSyncContext | None,
     retriever_email: str,
 ) -> SlimDocument | None:

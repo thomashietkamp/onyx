@@ -1,5 +1,6 @@
-"""Who may read the paths of one container. Enterprise Edition resolves it
-from Azure RBAC, the container's anonymous access, and the POSIX ACLs."""
+"""Who may read the paths of one container, resolved from Azure RBAC, the
+container's anonymous access, and the POSIX ACLs
+(``onyx/external_permissions/azure_datalake/access.py``)."""
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable
@@ -12,12 +13,9 @@ from onyx.connectors.azure_datalake.models import AzureDataLakePath
 from onyx.connectors.azure_datalake.source_operations import (
     AzureDataLakeSourceOperations,
 )
-from onyx.utils.variable_functionality import (
-    fetch_versioned_implementation,
-    global_version,
-)
+from onyx.utils.variable_functionality import fetch_versioned_implementation
 
-_EE_ACCESS_MODULE = "onyx.external_permissions.azure_datalake.access"
+_ACCESS_MODULE = "onyx.external_permissions.azure_datalake.access"
 
 
 class AzureDataLakeAccessWalker(ABC):
@@ -44,12 +42,9 @@ def build_access_walker(
     account_name: str,
     container_name: str,
 ) -> AzureDataLakeAccessWalker | None:
-    """None outside Enterprise Edition."""
-    if not global_version.is_ee_version():
-        return None
     build = cast(
         Callable[[AzureDataLakeSourceOperations, str, str], AzureDataLakeAccessWalker],
-        fetch_versioned_implementation(_EE_ACCESS_MODULE, "build_access_walker"),
+        fetch_versioned_implementation(_ACCESS_MODULE, "build_access_walker"),
     )
     return build(ops, account_name, container_name)
 

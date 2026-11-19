@@ -121,8 +121,7 @@ def get_external_access_for_folder(
     This fetches permissions using the Drive API (via permissionIds) and extracts
     user emails, group emails, and public access status.
 
-    Uses the EE implementation if available, otherwise returns public access
-    (fallback for non-EE deployments).
+    The implementation is ``onyx/external_permissions/google_drive/doc_sync.py``.
 
     Args:
         folder: The folder metadata from Google Drive API (must include permissionIds field)
@@ -136,7 +135,6 @@ def get_external_access_for_folder(
     Returns:
         ExternalAccess with extracted permission info
     """
-    # Try to get the EE implementation
     get_folder_access_fn = cast(
         Callable[
             [GoogleDriveFileType, str, GoogleDriveSourceOperations, str, bool],

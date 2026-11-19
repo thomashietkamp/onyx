@@ -7,10 +7,7 @@ from typing import cast
 
 from onyx.access.models import ExternalAccess
 from onyx.connectors.jira.source_operations import JiraSourceOperations
-from onyx.utils.variable_functionality import (
-    fetch_versioned_implementation,
-    global_version,
-)
+from onyx.utils.variable_functionality import fetch_versioned_implementation
 
 
 def get_project_permissions(
@@ -19,8 +16,8 @@ def get_project_permissions(
     add_prefix: bool = False,
 ) -> ExternalAccess | None:
     """
-    Fetch the project + issue level permissions / access-control.
-    This functionality requires Enterprise Edition.
+    Fetch the project + issue level permissions / access-control
+    (``onyx/external_permissions/jira/page_access.py``).
 
     Args:
         source_operations: The Jira gateway.
@@ -30,14 +27,11 @@ def get_project_permissions(
                    where upsert_document_external_perms handles prefixing).
 
     Returns:
-        ExternalAccess object for the page. None if EE is not enabled or no restrictions found.
+        ExternalAccess for the project's issues. None if the project's permissions
+        cannot be read.
     """
 
-    # Check if EE is enabled
-    if not global_version.is_ee_version():
-        return None
-
-    ee_get_project_permissions = cast(
+    get_project_permissions_impl = cast(
         Callable[
             [JiraSourceOperations, str, bool],
             ExternalAccess | None,
@@ -47,7 +41,7 @@ def get_project_permissions(
         ),
     )
 
-    return ee_get_project_permissions(
+    return get_project_permissions_impl(
         source_operations,
         jira_project,
         add_prefix,

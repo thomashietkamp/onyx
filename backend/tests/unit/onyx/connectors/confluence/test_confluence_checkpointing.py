@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from requests.exceptions import HTTPError
 
+from onyx.access.models import ExternalAccess
 from onyx.configs.constants import DocumentSource
 from onyx.connectors.confluence.connector import (
     ConfluenceCheckpoint,
@@ -344,8 +345,18 @@ def test_retrieve_all_slim_docs_perm_sync(
         MagicMock(json=lambda: {"results": []}),
     ]
 
-    # Call retrieve_all_slim_docs_perm_sync
-    batches = list(confluence_connector.retrieve_all_slim_docs_perm_sync(0, 100))
+    space_access = ExternalAccess(
+        external_user_emails={"reader@example.com"},
+        external_user_group_ids={"readers"},
+        is_public=False,
+    )
+    # Call retrieve_all_slim_docs_perm_sync. The pages carry no restriction,
+    # so they get their space's access.
+    with patch(
+        "onyx.connectors.confluence.connector.get_all_space_permissions",
+        return_value={"TEST": space_access},
+    ):
+        batches = list(confluence_connector.retrieve_all_slim_docs_perm_sync(0, 100))
     assert get_mock.call_count == 4
 
     # With batch size of 2, we get:
@@ -358,6 +369,7 @@ def test_retrieve_all_slim_docs_perm_sync(
     assert batches[0][0].raw_node_id == "TEST"
     assert isinstance(batches[0][1], SlimDocument)
     assert batches[0][1].id == f"{confluence_connector.wiki_base}/spaces/TEST/pages/1"
+    assert batches[0][1].external_access == space_access
 
     assert len(batches[1]) == 1
     assert isinstance(batches[1][0], SlimDocument)

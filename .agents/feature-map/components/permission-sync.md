@@ -9,7 +9,11 @@
 **Edition:** EE only, on the business tier. A CE deployment has no doc sync and
 no group sync, and its documents are never narrowed below the access type that
 an admin sets. This fork has MIT doc sync and group sync for the Microsoft sources
-(SharePoint, OneDrive, Teams, and Outlook without groups). The registry is
+(SharePoint, OneDrive, Teams, and Outlook without groups), Google Drive, Gmail,
+Confluence, Slack, GitHub, Box, Canvas, Egnyte, Linear, YouTrack, Azure Data
+Lake, Zoom and HubSpot. Jira is not in the registry: the fork does not read
+issue security levels, so every issue would get its project's access.
+Salesforce is not in it either: its records need post-query censoring. The registry is
 `backend/onyx/external_permissions/sync_params.py`. A source not in it cannot be
 set to Sync. The tasks are in `backend/onyx/background/celery/tasks/doc_permission_syncing/`
 and `external_group_syncing/`, and the writes are in `backend/onyx/db/external_perm.py`.

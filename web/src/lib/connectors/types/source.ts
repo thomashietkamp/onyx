@@ -90,11 +90,9 @@ export const federatedSourceToRegularSource = (
 
 export const validAutoSyncSources = [
   ValidSources.Confluence,
-  ValidSources.Jira,
   ValidSources.GoogleDrive,
   ValidSources.Gmail,
   ValidSources.Slack,
-  ValidSources.Salesforce,
   ValidSources.GitHub,
   ValidSources.Sharepoint,
   ValidSources.Teams,

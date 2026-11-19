@@ -125,6 +125,10 @@ def test_slim_permission_sync_skips_missing_list_id_and_continues(
     assert mock_convert.call_args.args[0] is valid.driveitem
 
 
+@patch(
+    "onyx.connectors.sharepoint.connector.get_sharepoint_hierarchy_node_external_access",
+    return_value=ExternalAccess.empty(),
+)
 @patch("onyx.connectors.sharepoint.connector._convert_sitepage_to_slim_document")
 @patch("onyx.connectors.sharepoint.connector.SharepointConnector._fetch_site_pages")
 @patch("onyx.connectors.sharepoint.connector.SharepointConnector._fetch_driveitems")
@@ -134,6 +138,7 @@ def test_site_page_error_does_not_crash(
     mock_fetch_driveitems: MagicMock,
     mock_fetch_site_pages: MagicMock,
     mock_convert: MagicMock,
+    _mock_hierarchy_access: MagicMock,
 ) -> None:
     """A 401 (or any exception) on a site page is caught; remaining pages are processed."""
     connector = _make_connector()
@@ -172,6 +177,10 @@ def test_site_page_error_does_not_crash(
     assert not any(d.id == "2" for d in results)
 
 
+@patch(
+    "onyx.connectors.sharepoint.connector.get_sharepoint_hierarchy_node_external_access",
+    return_value=ExternalAccess.empty(),
+)
 @patch("onyx.connectors.sharepoint.connector._convert_sitepage_to_slim_document")
 @patch("onyx.connectors.sharepoint.connector.SharepointConnector._fetch_site_pages")
 @patch("onyx.connectors.sharepoint.connector.SharepointConnector._fetch_driveitems")
@@ -181,6 +190,7 @@ def test_all_site_pages_fail_does_not_crash(
     mock_fetch_driveitems: MagicMock,
     mock_fetch_site_pages: MagicMock,
     mock_convert: MagicMock,
+    _mock_hierarchy_access: MagicMock,
 ) -> None:
     """When every site page fails, the generator completes without raising."""
     connector = _make_connector()

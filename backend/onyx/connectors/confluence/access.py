@@ -3,10 +3,7 @@ from typing import Any, cast
 
 from onyx.access.models import ExternalAccess
 from onyx.connectors.confluence.source_operations import ConfluenceSourceOperations
-from onyx.utils.variable_functionality import (
-    fetch_versioned_implementation,
-    global_version,
-)
+from onyx.utils.variable_functionality import fetch_versioned_implementation
 
 
 def get_page_restrictions(
@@ -17,20 +14,17 @@ def get_page_restrictions(
     add_prefix: bool = False,
 ) -> ExternalAccess | None:
     """
-    Get page access restrictions for a Confluence page.
-    This functionality requires Enterprise Edition.
+    Get page access restrictions for a Confluence page
+    (``onyx/external_permissions/confluence/page_access.py``).
 
     add_prefix: True for the indexing path (Document.external_access) so group
     ids carry the source-type prefix the search filter expects. False for the
     permission-sync path, where upsert_document_external_perms adds the prefix.
 
-    Returns ExternalAccess for the page, or None if EE is not enabled or no
-    restrictions are found.
+    Returns ExternalAccess for the page, or None if no read restriction
+    applies (the space permissions apply then).
     """
-    if not global_version.is_ee_version():
-        return None
-
-    ee_get_all_page_restrictions = cast(
+    get_all_page_restrictions_impl = cast(
         Callable[
             [
                 ConfluenceSourceOperations,
@@ -46,7 +40,7 @@ def get_page_restrictions(
         ),
     )
 
-    return ee_get_all_page_restrictions(
+    return get_all_page_restrictions_impl(
         source_operations, page_id, page_restrictions, ancestors, add_prefix
     )
 
@@ -61,11 +55,8 @@ def get_page_restrictions_with_per_ancestor_fetch(
 ) -> ExternalAccess | None:
     """CONFCLOUD-77618 variant of `get_page_restrictions`. Ancestors
     arrive without inline restrictions; each is fetched via
-    `restriction/byOperation` with 403/404 swallowed for drafts. EE-only."""
-    if not global_version.is_ee_version():
-        return None
-
-    ee_get_per_ancestor = cast(
+    `restriction/byOperation` with 403/404 swallowed for drafts."""
+    get_per_ancestor_impl = cast(
         Callable[
             [
                 ConfluenceSourceOperations,
@@ -83,7 +74,7 @@ def get_page_restrictions_with_per_ancestor_fetch(
         ),
     )
 
-    return ee_get_per_ancestor(
+    return get_per_ancestor_impl(
         source_operations,
         page_id,
         page_restrictions,
@@ -99,20 +90,17 @@ def get_all_space_permissions(
     add_prefix: bool = False,
 ) -> dict[str, ExternalAccess]:
     """
-    Get access permissions for all spaces in Confluence.
-    This functionality requires Enterprise Edition.
+    Get access permissions for all spaces in Confluence
+    (``onyx/external_permissions/confluence/space_access.py``).
 
     add_prefix: True for the indexing path (Document.external_access) so group
     ids carry the source-type prefix the search filter expects. False for the
     permission-sync path, where upsert_document_external_perms adds the prefix.
 
-    Returns a mapping of space key to ExternalAccess. Empty dict if EE is not
-    enabled.
+    Returns a mapping of space key to ExternalAccess. A space whose
+    permissions cannot be read is left out.
     """
-    if not global_version.is_ee_version():
-        return {}
-
-    ee_get_all_space_permissions = cast(
+    get_all_space_permissions_impl = cast(
         Callable[
             [ConfluenceSourceOperations, bool, bool],
             dict[str, ExternalAccess],
@@ -123,4 +111,4 @@ def get_all_space_permissions(
         ),
     )
 
-    return ee_get_all_space_permissions(source_operations, is_cloud, add_prefix)
+    return get_all_space_permissions_impl(source_operations, is_cloud, add_prefix)

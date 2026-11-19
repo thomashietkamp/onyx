@@ -10,10 +10,7 @@ from onyx.server.security.models import connector_ssrf_enforced
 from onyx.server.security.store import get_security_settings
 from onyx.utils.logger import setup_logger
 from onyx.utils.url import SSRFException, validate_outbound_http_url
-from onyx.utils.variable_functionality import (
-    fetch_versioned_implementation,
-    global_version,
-)
+from onyx.utils.variable_functionality import fetch_versioned_implementation
 
 logger = setup_logger()
 
@@ -110,22 +107,13 @@ def resolve_github_base_url(credentials: Mapping[str, Any]) -> str | None:
 
 
 def get_external_access_permission(repo: GitHubRepository) -> ExternalAccess:
-    """
-    Get the external access permission for a repository.
-    This functionality requires Enterprise Edition.
-    """
-    # Check if EE is enabled
-    if not global_version.is_ee_version():
-        # For the MIT version, return an empty ExternalAccess (private document)
-        return ExternalAccess.empty()
-
-    # Fetch the EE implementation
-    ee_get_external_access_permission = cast(
+    """The access of every document of a repository, with source-prefixed
+    group ids (indexing stores them as given)."""
+    get_access = cast(
         Callable[[GitHubRepository, bool], ExternalAccess],
         fetch_versioned_implementation(
             "onyx.external_permissions.github.utils",
             "get_external_access_permission",
         ),
     )
-
-    return ee_get_external_access_permission(repo, True)
+    return get_access(repo, True)

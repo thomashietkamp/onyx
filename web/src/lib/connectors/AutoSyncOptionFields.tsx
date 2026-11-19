@@ -18,12 +18,10 @@ export const autoSyncConfigBySource: Record<
 > = {
   box: {},
   confluence: {},
-  jira: {},
   google_drive: {},
   gmail: {},
   github: {},
   slack: {},
-  salesforce: {},
   sharepoint: {},
   teams: {},
   outlook: {},

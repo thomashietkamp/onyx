@@ -4,12 +4,9 @@ from typing import cast
 from onyx.access.models import ExternalAccess
 from onyx.connectors.egnyte.models import EgnyteDirectory, EgnytePermissions
 from onyx.connectors.egnyte.source_operations import EgnyteSourceOperations
-from onyx.utils.variable_functionality import (
-    fetch_versioned_implementation,
-    global_version,
-)
+from onyx.utils.variable_functionality import fetch_versioned_implementation
 
-_EE_ACCESS_MODULE: str = "onyx.external_permissions.egnyte.access"
+_ACCESS_MODULE: str = "onyx.external_permissions.egnyte.access"
 
 
 class EgnyteUnknownGroupError(RuntimeError):
@@ -19,13 +16,11 @@ class EgnyteUnknownGroupError(RuntimeError):
 
 
 def load_directory(ops: EgnyteSourceOperations) -> EgnyteDirectory | None:
-    if not global_version.is_ee_version():
-        return None
-    ee_build_directory = cast(
+    build_directory = cast(
         Callable[[EgnyteSourceOperations], EgnyteDirectory],
-        fetch_versioned_implementation(_EE_ACCESS_MODULE, "build_directory"),
+        fetch_versioned_implementation(_ACCESS_MODULE, "build_directory"),
     )
-    return ee_build_directory(ops)
+    return build_directory(ops)
 
 
 def get_folder_access(
@@ -33,10 +28,8 @@ def get_folder_access(
     permissions: EgnytePermissions | None,
     directory: EgnyteDirectory,
 ) -> ExternalAccess | None:
-    if not global_version.is_ee_version():
-        return None
-    ee_folder_access = cast(
+    folder_access = cast(
         Callable[[str, EgnytePermissions | None, EgnyteDirectory], ExternalAccess],
-        fetch_versioned_implementation(_EE_ACCESS_MODULE, "folder_access"),
+        fetch_versioned_implementation(_ACCESS_MODULE, "folder_access"),
     )
-    return ee_folder_access(domain, permissions, directory)
+    return folder_access(domain, permissions, directory)

@@ -113,7 +113,7 @@ RESTRICTIONS_EXPANSION_FIELDS = [
     "ancestors.restrictions.read.restrictions.group",
     "history",  # for history.createdDate (doc_created_at backfill)
 ]
-# CONFCLOUD-77618 fallback: bare ancestors only; EE resolver fetches
+# CONFCLOUD-77618 fallback: bare ancestors only; the resolver fetches
 # each ancestor's restrictions via `restriction/byOperation`.
 PER_PAGE_RESTRICTIONS_EXPANSION_FIELDS = [
     "space",
@@ -1304,8 +1304,8 @@ class ConfluenceConnector(
                 )
             )
 
-            # Attachments resolve from inline `restrictions` only; no
-            # ancestor walk, so per-page mode is a no-op for them.
+            # Attachments resolve against the page and its ancestors; the
+            # page's restrictions are inline, so only ancestors are fetched.
             page_hierarchy_node_yielded = False
             attachment_results: Iterable[dict[str, Any]] = ()
             if self.include_attachments:
@@ -1337,9 +1337,13 @@ class ConfluenceConnector(
                         doc_metadata_list.append(page_node)
                     page_hierarchy_node_yielded = True
 
-                attachment_restrictions = attachment.get("restrictions", {})
-                if not attachment_restrictions:
-                    attachment_restrictions = page_restrictions or {}
+                # An attachment passes its own restriction, its page's and
+                # every ancestor's.
+                attachment_restrictions = attachment.get("restrictions") or {}
+                attachment_ancestors = [
+                    {"id": _get_page_id(page), "restrictions": page_restrictions},
+                    *page_ancestors,
+                ]
 
                 attachment_space_key = attachment.get("space", {}).get("key")
                 if not attachment_space_key:
@@ -1357,7 +1361,7 @@ class ConfluenceConnector(
                             get_external_access(
                                 attachment_id,
                                 attachment_restrictions,
-                                [],
+                                attachment_ancestors,
                                 attachment_space_key,
                             )
                             if include_permissions

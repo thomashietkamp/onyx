@@ -1,6 +1,6 @@
 import re
 import time
-from collections.abc import Callable, Generator
+from collections.abc import Callable, Generator, Iterator
 from datetime import datetime, timezone
 from typing import Any, cast
 from urllib.parse import urlparse
@@ -25,12 +25,14 @@ from onyx.connectors.interfaces import (
     CredentialsConnector,
     CredentialsProviderInterface,
     GenerateDocumentsOutput,
+    GenerateSlimDocumentOutput,
     LoadConnector,
     NormalizationResult,
     OAuthConnector,
     PollConnector,
     Resolver,
     SecondsSinceUnixEpoch,
+    SlimConnectorWithPermSync,
 )
 from onyx.connectors.linear.scope import (
     issue_filter,
@@ -58,8 +60,10 @@ from onyx.connectors.models import (
     DocumentFailure,
     HierarchyNode,
     ImageSection,
+    SlimDocument,
     TextSection,
 )
+from onyx.indexing.indexing_heartbeat import IndexingHeartbeatInterface
 from onyx.utils.logger import setup_logger
 from onyx.utils.retry_wrapper import request_with_retries
 from onyx.utils.variable_functionality import (
@@ -149,6 +153,27 @@ def _issue_access_by_id(
     return fetch_access(ops, issue_filter)
 
 
+def _issue_access_pages(
+    ops: LinearSourceOperations, issue_filter: dict[str, Any]
+) -> Iterator[dict[str, ExternalAccess]]:
+    """Per page of the issues the filter matches: who may read each one."""
+    iter_pages = cast(
+        Callable[
+            [LinearSourceOperations, dict[str, Any]],
+            Iterator[dict[str, ExternalAccess]] | None,
+        ],
+        fetch_versioned_implementation_with_fallback(
+            "onyx.external_permissions.linear.connector",
+            "iter_issue_access_pages",
+            fallback=noop_fallback,
+        ),
+    )
+    pages = iter_pages(ops, issue_filter)
+    if pages is None:
+        raise RuntimeError("Linear permission sync is not available")
+    return pages
+
+
 def _is_issue_id(document_id: str) -> bool:
     """A Linear issue document id is the issue's UUID."""
     try:
@@ -169,7 +194,12 @@ def _reindex_failure(
 
 
 class LinearConnector(
-    LoadConnector, PollConnector, OAuthConnector, CredentialsConnector, Resolver
+    LoadConnector,
+    PollConnector,
+    SlimConnectorWithPermSync,
+    OAuthConnector,
+    CredentialsConnector,
+    Resolver,
 ):
     supports_manual_credentials = True
 
@@ -315,6 +345,24 @@ class LinearConnector(
 
     def load_from_state(self) -> GenerateDocumentsOutput:
         yield from self._process_issues()
+
+    def retrieve_all_slim_docs_perm_sync(
+        self,
+        start: SecondsSinceUnixEpoch | None = None,  # noqa: ARG002
+        end: SecondsSinceUnixEpoch | None = None,  # noqa: ARG002
+        callback: IndexingHeartbeatInterface | None = None,
+    ) -> GenerateSlimDocumentOutput:
+        """Every issue in the configured teams and projects, with its readers.
+        Lists all of them, whatever the window, like the full load."""
+        for page in _issue_access_pages(self.ops, self._issue_filter()):
+            if callback is not None:
+                if callback.should_stop():
+                    raise RuntimeError("Linear slim retrieval: stop signal detected")
+                callback.progress("linear_slim_retrieval", len(page))
+            yield [
+                SlimDocument(id=issue_id, external_access=access)
+                for issue_id, access in page.items()
+            ]
 
     @override
     def reindex(
