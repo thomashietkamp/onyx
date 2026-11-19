@@ -7449,6 +7449,9 @@
         "ai": {
           "label": "AI"
         },
+        "agent": {
+          "label": "智能体"
+        },
         "errorTitle": {
           "title": "出错了 :("
         },
@@ -17293,5 +17296,28 @@
   },
   "integrations": {
     "connectionState": "{state, select, connected {已连接} not_connected {未连接} needs_reconnect {需要重新连接} not_set_up {未设置} other {未知}}"
+  },
+  "searchMode": {
+    "loading": {
+      "description": "正在搜索文档..."
+    },
+    "error": {
+      "title": "搜索失败",
+      "generic": "搜索失败，请重试。"
+    },
+    "empty": {
+      "title": "未找到文档",
+      "description": "请尝试其他词语或移除筛选条件。"
+    },
+    "results": {
+      "count": "{count, plural, other {# 个结果}}",
+      "bestMatch": "最佳匹配",
+      "openDocument": "打开 {title}",
+      "alsoSearched": "同时搜索：{queries}"
+    },
+    "filters": {
+      "allSources": "所有来源 ({count})",
+      "source": "{source} ({count})"
+    }
   }
 }

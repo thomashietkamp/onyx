@@ -130,6 +130,7 @@ for bootstep in base_bootsteps:
 celery_app.autodiscover_tasks(
     app_base.filter_task_modules(
         [
+            "onyx.background.celery.tasks.log_export",
             # Craft scheduled-task dispatcher / executor / stuck-run sweeper.
             # Owned by this dedicated worker so long-running headless agent
             # fires don't compete for slots with `heavy` queue work

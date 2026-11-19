@@ -138,6 +138,15 @@ beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_monitor-celery-queues: Records cloud queue 
 beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_monitor-celery-pidbox: Cleans old pidboxes every 4 hours.
 beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_check-available-tenants: Keeps provisioned tenants available every 2 minutes.
 
+# Admin exports
+task EXPORT_QUERY_HISTORY_TASK: User-started query history CSV export; long and must survive an API restart.
+task EXPORT_QUERY_HISTORY_CLEANUP_TASK: Fails lost or stalled query history exports and deletes old ones.
+beat export-query-history-cleanup: Fails lost or stalled query history and usage report jobs every hour.
+task EXPORT_LOGS_COLLECT_TASK: Collects one worker type's log files for an admin log export, on that worker's queue.
+task EXPORT_LOGS_CLEANUP_TASK: Hourly delete of log export files older than 24 hours.
+beat export-logs-cleanup: Old log export files must not fill the file store.
+task GENERATE_USAGE_REPORT_TASK: User-started usage report ZIP; long and must survive an API restart.
+
 # Hooks
 task HOOK_EXECUTION_LOG_CLEANUP_TASK: Daily delete of hook failure logs older than 30 days.
 beat hook-execution-log-cleanup: The failure log must not grow without a limit.

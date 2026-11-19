@@ -138,7 +138,9 @@ from onyx.server.features.usage.api import admin_usage_router, user_usage_router
 from onyx.server.features.usage.api import router as cost_override_router
 from onyx.server.features.web_search.api import router as web_search_router
 from onyx.server.federated.api import router as federated_router
+from onyx.server.gateway.api import router as llm_gateway_router
 from onyx.server.kg.api import admin_router as kg_admin_router
+from onyx.server.log_export.api import router as log_export_router
 from onyx.server.manage.administrative import router as admin_router
 from onyx.server.manage.code_interpreter.api import (
     admin_router as code_interpreter_admin_router,
@@ -185,6 +187,7 @@ from onyx.server.pat.api import router as pat_router
 from onyx.server.query_and_chat.chat_backend import router as chat_router
 from onyx.server.query_and_chat.query_backend import admin_router as admin_query_router
 from onyx.server.query_and_chat.query_backend import basic_router as query_router
+from onyx.server.query_history.api import router as query_history_router
 from onyx.server.saml_multi import router as saml_multi_router
 from onyx.server.scim.api import admin_router as scim_admin_router
 from onyx.server.scim.api import register_scim_exception_handler
@@ -195,6 +198,7 @@ from onyx.server.settings.api import admin_router as settings_admin_router
 from onyx.server.settings.api import basic_router as settings_router
 from onyx.server.spending_limits.api import router as spending_limits_router
 from onyx.server.sso_discovery import router as sso_discovery_router
+from onyx.server.usage_report.api import router as usage_report_router
 from onyx.server.user_group.api import router as user_group_router
 from onyx.server.utils import BasicAuthenticationError
 from onyx.setup import setup_multitenant_onyx, setup_onyx
@@ -675,6 +679,10 @@ def get_application(lifespan_override: Lifespan | None = None) -> FastAPI:
         include_router_with_global_prefix_prepended(application, spending_limits_router)
         include_router_with_global_prefix_prepended(application, hooks_router)
         include_router_with_global_prefix_prepended(application, analytics_router)
+        include_router_with_global_prefix_prepended(application, query_history_router)
+        include_router_with_global_prefix_prepended(application, usage_report_router)
+        include_router_with_global_prefix_prepended(application, log_export_router)
+        include_router_with_global_prefix_prepended(application, llm_gateway_router)
     include_router_with_global_prefix_prepended(application, security_admin_router)
     include_router_with_global_prefix_prepended(application, sso_admin_router)
     include_router_with_global_prefix_prepended(application, llm_admin_router)

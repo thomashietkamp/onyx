@@ -7449,6 +7449,9 @@
         "ai": {
           "label": "AI"
         },
+        "agent": {
+          "label": "Agent"
+        },
         "errorTitle": {
           "title": "Something went wrong :("
         },
@@ -17293,5 +17296,28 @@
   },
   "integrations": {
     "connectionState": "{state, select, connected {Connected} not_connected {Not connected} needs_reconnect {Needs reconnect} not_set_up {Not set up} other {Unknown}}"
+  },
+  "searchMode": {
+    "loading": {
+      "description": "Searching documents..."
+    },
+    "error": {
+      "title": "Search failed",
+      "generic": "Search failed. Try again."
+    },
+    "empty": {
+      "title": "No documents found",
+      "description": "Try other words or remove a filter."
+    },
+    "results": {
+      "count": "{count, plural, one {# result} other {# results}}",
+      "bestMatch": "Best match",
+      "openDocument": "Open {title}",
+      "alsoSearched": "Also searched: {queries}"
+    },
+    "filters": {
+      "allSources": "All Sources ({count})",
+      "source": "{source} ({count})"
+    }
   }
 }

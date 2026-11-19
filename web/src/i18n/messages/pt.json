@@ -7449,6 +7449,9 @@
         "ai": {
           "label": "IA"
         },
+        "agent": {
+          "label": "Agente"
+        },
         "errorTitle": {
           "title": "Algo deu errado :("
         },
@@ -17293,5 +17296,28 @@
   },
   "integrations": {
     "connectionState": "{state, select, connected {Conectada} not_connected {Não conectada} needs_reconnect {Requer reconexão} not_set_up {Não configurada} other {Desconhecido}}"
+  },
+  "searchMode": {
+    "loading": {
+      "description": "Pesquisando documentos..."
+    },
+    "error": {
+      "title": "A pesquisa falhou",
+      "generic": "A pesquisa falhou. Tente novamente."
+    },
+    "empty": {
+      "title": "Nenhum documento encontrado",
+      "description": "Tente outras palavras ou remova um filtro."
+    },
+    "results": {
+      "count": "{count, plural, one {# resultado} other {# resultados}}",
+      "bestMatch": "Melhor correspondência",
+      "openDocument": "Abrir {title}",
+      "alsoSearched": "Também pesquisado: {queries}"
+    },
+    "filters": {
+      "allSources": "Todas as fontes ({count})",
+      "source": "{source} ({count})"
+    }
   }
 }

@@ -6,7 +6,12 @@
 
 **Verified against:** `73e0ae3c31` (2026-10-28)
 **Edition:** EE. The router mounts only in `backend/ee/onyx/main.py`, and the
-tier gate requires Business or higher for the whole `/gateway` prefix.
+tier gate requires Business or higher for the whole `/gateway` prefix. This fork has the
+router in MIT code (`backend/onyx/server/gateway/api.py`), mounted in
+`backend/onyx/main.py`. The flow check and metering are in
+`backend/onyx/server/gateway/access.py`, and tool-call deltas merge in
+`backend/onyx/server/gateway/stream_bridge.py:ToolCallAccumulator`. The fork
+has no tier gate middleware; it runs at the Enterprise tier.
 
 ---
 

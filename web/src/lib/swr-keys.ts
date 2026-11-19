@@ -357,7 +357,10 @@ export const SWR_KEYS = {
   // ── Admin ─────────────────────────────────────────────────────────────────
   hooks: "/api/admin/hooks",
   hookSpecs: "/api/admin/hooks/specs",
+  logExport: "/api/admin/log-export",
   logExportStatus: (exportId: string) => `/api/admin/log-export/${exportId}`,
+  logExportDownload: (exportId: string) =>
+    `/api/admin/log-export/${exportId}/download`,
 
   // ── Slack Bots ────────────────────────────────────────────────────────────
   slackChannels: "/api/manage/admin/slack-app/channel",
@@ -373,6 +376,7 @@ export const SWR_KEYS = {
   // ── Query History (EE) ────────────────────────────────────────────────────
   adminChatSessionHistory: "/api/admin/chat-session-history",
   adminChatSession: (id: string) => `/api/admin/chat-session-history/${id}`,
+  adminQueryHistoryExports: "/api/admin/query-history/list",
 
   // ── Document Processing ───────────────────────────────────────────────────
   unstructuredApiKeySet: "/api/search-settings/unstructured-api-key-set",

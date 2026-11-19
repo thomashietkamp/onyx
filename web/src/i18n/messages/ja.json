@@ -7449,6 +7449,9 @@
         "ai": {
           "label": "AI"
         },
+        "agent": {
+          "label": "エージェント"
+        },
         "errorTitle": {
           "title": "問題が発生しました :("
         },
@@ -17293,5 +17296,28 @@
   },
   "integrations": {
     "connectionState": "{state, select, connected {接続済み} not_connected {未接続} needs_reconnect {要再接続} not_set_up {未設定} other {不明}}"
+  },
+  "searchMode": {
+    "loading": {
+      "description": "ドキュメントを検索しています..."
+    },
+    "error": {
+      "title": "検索に失敗しました",
+      "generic": "検索に失敗しました。もう一度お試しください。"
+    },
+    "empty": {
+      "title": "ドキュメントが見つかりません",
+      "description": "別の語句を試すか、フィルターを外してください。"
+    },
+    "results": {
+      "count": "{count, plural, other {# 件の結果}}",
+      "bestMatch": "最適な一致",
+      "openDocument": "{title} を開く",
+      "alsoSearched": "追加で検索: {queries}"
+    },
+    "filters": {
+      "allSources": "すべてのソース ({count})",
+      "source": "{source} ({count})"
+    }
   }
 }

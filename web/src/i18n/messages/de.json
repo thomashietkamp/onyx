@@ -7449,6 +7449,9 @@
         "ai": {
           "label": "KI"
         },
+        "agent": {
+          "label": "Agent"
+        },
         "errorTitle": {
           "title": "Etwas ist schiefgelaufen :("
         },
@@ -17293,5 +17296,28 @@
   },
   "integrations": {
     "connectionState": "{state, select, connected {Verbunden} not_connected {Nicht verbunden} needs_reconnect {Neu verbinden} not_set_up {Nicht eingerichtet} other {Unbekannt}}"
+  },
+  "searchMode": {
+    "loading": {
+      "description": "Dokumente werden durchsucht..."
+    },
+    "error": {
+      "title": "Suche fehlgeschlagen",
+      "generic": "Suche fehlgeschlagen. Versuchen Sie es erneut."
+    },
+    "empty": {
+      "title": "Keine Dokumente gefunden",
+      "description": "Versuchen Sie andere Wörter oder entfernen Sie einen Filter."
+    },
+    "results": {
+      "count": "{count, plural, one {# Ergebnis} other {# Ergebnisse}}",
+      "bestMatch": "Beste Übereinstimmung",
+      "openDocument": "{title} öffnen",
+      "alsoSearched": "Ebenfalls gesucht: {queries}"
+    },
+    "filters": {
+      "allSources": "Alle Quellen ({count})",
+      "source": "{source} ({count})"
+    }
   }
 }

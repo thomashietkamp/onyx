@@ -7449,6 +7449,9 @@
         "ai": {
           "label": "IA"
         },
+        "agent": {
+          "label": "Agent"
+        },
         "errorTitle": {
           "title": "Une erreur est survenue :("
         },
@@ -17293,5 +17296,28 @@
   },
   "integrations": {
     "connectionState": "{state, select, connected {Connectée} not_connected {Non connectée} needs_reconnect {Reconnexion requise} not_set_up {Non configurée} other {Inconnu}}"
+  },
+  "searchMode": {
+    "loading": {
+      "description": "Recherche de documents..."
+    },
+    "error": {
+      "title": "Échec de la recherche",
+      "generic": "Échec de la recherche. Réessayez."
+    },
+    "empty": {
+      "title": "Aucun document trouvé",
+      "description": "Essayez d'autres mots ou retirez un filtre."
+    },
+    "results": {
+      "count": "{count, plural, one {# résultat} other {# résultats}}",
+      "bestMatch": "Meilleure correspondance",
+      "openDocument": "Ouvrir {title}",
+      "alsoSearched": "Également recherché : {queries}"
+    },
+    "filters": {
+      "allSources": "Toutes les sources ({count})",
+      "source": "{source} ({count})"
+    }
   }
 }

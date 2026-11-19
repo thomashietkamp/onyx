@@ -107,6 +107,7 @@ for bootstep in base_bootsteps:
 celery_app.autodiscover_tasks(
     app_base.filter_task_modules(
         [
+            "onyx.background.celery.tasks.log_export",
             "onyx.background.celery.tasks.user_file_processing",
             # registers run_user_file_port_attempt on this worker
             "onyx.background.celery.tasks.port",

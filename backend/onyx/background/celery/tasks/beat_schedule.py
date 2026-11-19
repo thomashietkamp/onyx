@@ -59,6 +59,25 @@ beat_task_templates: list[dict] = [
         },
     },
     {
+        "name": "export-query-history-cleanup",
+        "task": OnyxCeleryTask.EXPORT_QUERY_HISTORY_CLEANUP_TASK,
+        "schedule": timedelta(hours=1),
+        "options": {
+            "queue": OnyxCeleryQueues.CSV_GENERATION,
+            "priority": OnyxCeleryPriority.LOW,
+            "expires": BEAT_EXPIRES_DEFAULT,
+        },
+    },
+    {
+        "name": "export-logs-cleanup",
+        "task": OnyxCeleryTask.EXPORT_LOGS_CLEANUP_TASK,
+        "schedule": timedelta(hours=1),
+        "options": {
+            "priority": OnyxCeleryPriority.LOW,
+            "expires": BEAT_EXPIRES_DEFAULT,
+        },
+    },
+    {
         "name": "hook-execution-log-cleanup",
         "task": OnyxCeleryTask.HOOK_EXECUTION_LOG_CLEANUP_TASK,
         "schedule": timedelta(days=1),

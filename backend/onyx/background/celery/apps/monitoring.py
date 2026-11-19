@@ -146,6 +146,7 @@ for bootstep in base_bootsteps:
 celery_app.autodiscover_tasks(
     app_base.filter_task_modules(
         [
+            "onyx.background.celery.tasks.log_export",
             "onyx.background.celery.tasks.monitoring",
         ]
     )

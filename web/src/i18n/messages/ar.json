@@ -7449,6 +7449,9 @@
         "ai": {
           "label": "الذكاء الاصطناعي"
         },
+        "agent": {
+          "label": "وكيل"
+        },
         "errorTitle": {
           "title": "حدث خطأ ما :("
         },
@@ -17293,5 +17296,28 @@
   },
   "integrations": {
     "connectionState": "{state, select, connected {متصل} not_connected {غير متصل} needs_reconnect {يحتاج إلى إعادة الاتصال} not_set_up {غير مُعد} other {غير معروف}}"
+  },
+  "searchMode": {
+    "loading": {
+      "description": "جارٍ البحث في المستندات..."
+    },
+    "error": {
+      "title": "فشل البحث",
+      "generic": "فشل البحث. حاول مرة أخرى."
+    },
+    "empty": {
+      "title": "لم يتم العثور على مستندات",
+      "description": "جرّب كلمات أخرى أو أزل عامل تصفية."
+    },
+    "results": {
+      "count": "{count, plural, zero {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {# نتائج} many {# نتيجة} other {# نتيجة}}",
+      "bestMatch": "أفضل تطابق",
+      "openDocument": "فتح {title}",
+      "alsoSearched": "تم البحث أيضًا عن: {queries}"
+    },
+    "filters": {
+      "allSources": "كل المصادر ({count})",
+      "source": "{source} ({count})"
+    }
   }
 }

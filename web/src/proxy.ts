@@ -105,12 +105,7 @@ export const config = {
 };
 
 // Enterprise Edition specific routes (ONLY these get /ee rewriting)
-const EE_ROUTES = [
-  "/admin/performance/usage",
-  "/admin/performance/query-history",
-  "/admin/export-logs",
-  "/admin/service-accounts",
-];
+const EE_ROUTES = ["/admin/performance/usage", "/admin/service-accounts"];
 
 function withSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set("Content-Security-Policy", CSP_HEADER);

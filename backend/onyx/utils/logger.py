@@ -26,6 +26,9 @@ from shared_configs.contextvars import (
 
 logging.addLevelName(logging.INFO + 5, "NOTICE")
 
+# The directory of the onyx log files. The admin log export collects it.
+LOG_FILE_DIRECTORY = "/var/log/onyx" if is_running_in_container() else "./log"
+
 # The shared default dicts are only ever read, never mutated in place: writers
 # copy, update, then `set()` a new dict.
 pruning_ctx: contextvars.ContextVar[dict[str, Any]] = contextvars.ContextVar(
@@ -415,16 +418,11 @@ def add_file_handlers(
     if not LOG_TO_FILE:
         return
 
-    is_containerized = is_running_in_container()
-    if not LOG_FILE_NAME or not (is_containerized or DEV_LOGGING_ENABLED):
+    if not LOG_FILE_NAME or not (is_running_in_container() or DEV_LOGGING_ENABLED):
         return
 
     for level in ["debug", "info", "notice"]:
-        file_name = (
-            f"/var/log/onyx/{LOG_FILE_NAME}_{level}.log"
-            if is_containerized
-            else f"./log/{LOG_FILE_NAME}_{level}.log"
-        )
+        file_name = os.path.join(LOG_FILE_DIRECTORY, f"{LOG_FILE_NAME}_{level}.log")
         try:
             # Ensure the log directory exists
             log_dir = os.path.dirname(file_name)

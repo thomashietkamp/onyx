@@ -10,7 +10,15 @@ for the usage report, log export, query history and workspace analytics. This
 fork has workspace analytics and agent stats in MIT code
 (`backend/onyx/server/analytics/api.py`, `backend/onyx/db/analytics.py`). Each
 count groups by the UTC day of `ChatMessage.time_sent`; agent stats also need
-`can_view_persona_stats`.
+`can_view_persona_stats`. Query history is MIT code too
+(`backend/onyx/server/query_history/api.py`); its CSV export runs on the heavy
+worker, and the hourly export cleanup
+(`backend/onyx/background/celery/tasks/query_history/tasks.py`) fails lost or
+stalled query history and usage report jobs. The usage report and the log
+export are MIT code too (`backend/onyx/server/usage_report/`,
+`backend/onyx/server/log_export/`). Every worker app loads the log export
+task, and the export lock is a cache key, so a second start on any API
+replica gets the 429.
 
 ---
 
@@ -227,10 +235,10 @@ and starts the Kubernetes collection in a thread. Each piece has 90 s.
    Redis is down. Do not put a secret in `extra`.
    `auth/scoped_permissions.py:_emit_denial` passes no dedup key, so each
    denied attempt emits its own event.
-9. `log-export-lock-per-process` **The log export lock is per process.**
-   `ee/onyx/server/log_export/api.py:_ASYNC_EXPORT_LOCK` is in memory. With
-   more than one API server replica, two exports can run at once. A worker
-   with no free thread misses the 90 s deadline, and its piece is missing.
+9. `log-export-lock-per-process` **One log export at a time.** In this fork
+   the lock is a cache key (`backend/onyx/server/log_export/collection.py:try_claim_active_export`),
+   so it holds across API server replicas. A worker with no free thread misses
+   the 90 s deadline, and its piece is missing.
 10. `log-export-k8s-rbac` **Kubernetes log collection needs the Helm RBAC.**
     It runs only when `LOG_EXPORT_KUBERNETES_ENABLED` is true (default false)
     inside Kubernetes. The chart value `logExport.kubernetes.enabled` binds the
