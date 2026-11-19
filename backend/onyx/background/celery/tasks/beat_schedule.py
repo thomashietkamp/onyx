@@ -59,6 +59,16 @@ beat_task_templates: list[dict] = [
         },
     },
     {
+        "name": "hook-execution-log-cleanup",
+        "task": OnyxCeleryTask.HOOK_EXECUTION_LOG_CLEANUP_TASK,
+        "schedule": timedelta(days=1),
+        "options": {
+            "queue": OnyxCeleryQueues.PRIMARY,
+            "priority": OnyxCeleryPriority.LOW,
+            "expires": BEAT_EXPIRES_DEFAULT,
+        },
+    },
+    {
         "name": "cleanup-oauth-provider-grants",
         "task": OnyxCeleryTask.CLEANUP_OAUTH_PROVIDER_GRANTS,
         "schedule": timedelta(days=1),

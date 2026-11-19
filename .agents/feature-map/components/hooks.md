@@ -7,7 +7,11 @@
 
 **Verified against:** `6bac4e012f` (2026-10-29)
 **Edition:** EE, self-hosted only. CE runs a no-op. Cloud refuses the admin API
-and skips every hook.
+and skips every hook. This fork has the executor, the admin API and the daily
+log cleanup in MIT code: `backend/onyx/hooks/executor.py:_execute_hook_impl`,
+`backend/onyx/server/features/hooks/api.py` (with `_check_ssrf_safety`) and
+`backend/onyx/background/celery/tasks/hooks/tasks.py`, which deletes failure
+logs older than 30 days.
 
 ---
 

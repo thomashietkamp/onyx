@@ -138,6 +138,10 @@ beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_monitor-celery-queues: Records cloud queue 
 beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_monitor-celery-pidbox: Cleans old pidboxes every 4 hours.
 beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_check-available-tenants: Keeps provisioned tenants available every 2 minutes.
 
+# Hooks
+task HOOK_EXECUTION_LOG_CLEANUP_TASK: Daily delete of hook failure logs older than 30 days.
+beat hook-execution-log-cleanup: The failure log must not grow without a limit.
+
 # Permission sync
 task CHECK_FOR_DOC_PERMISSIONS_SYNC: Beat check that finds cc-pairs due for a doc permission sync and sends their generator tasks.
 task CONNECTOR_PERMISSION_SYNC_GENERATOR_TASK: Long crawl that copies each document's ACL from the source, on the heavy worker.

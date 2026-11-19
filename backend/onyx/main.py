@@ -100,6 +100,7 @@ from onyx.server.features.default_assistant.api import (
 )
 from onyx.server.features.document_set.api import router as document_set_router
 from onyx.server.features.hierarchy.api import router as hierarchy_router
+from onyx.server.features.hooks.api import router as hooks_router
 from onyx.server.features.image_generation.api import router as image_generation_router
 from onyx.server.features.input_prompt.api import (
     admin_router as admin_input_prompt_router,
@@ -671,6 +672,7 @@ def get_application(lifespan_override: Lifespan | None = None) -> FastAPI:
             application, standard_answer_query_router
         )
         include_router_with_global_prefix_prepended(application, spending_limits_router)
+        include_router_with_global_prefix_prepended(application, hooks_router)
     include_router_with_global_prefix_prepended(application, security_admin_router)
     include_router_with_global_prefix_prepended(application, sso_admin_router)
     include_router_with_global_prefix_prepended(application, llm_admin_router)
