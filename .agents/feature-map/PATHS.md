@@ -92,9 +92,9 @@ covers new files that match it.
 | `backend/onyx/db/document_set.py`, `backend/onyx/db/user_group.py`, `backend/onyx/server/features/document_set/`, `backend/ee/onyx/db/document_set.py` | access-control |
 | `backend/ee/onyx/server/user_group/`, `backend/ee/onyx/db/user_group.py`, `backend/onyx/server/user_group/`, `backend/onyx/db/user_group_management.py`, `backend/onyx/db/cc_pair_data_access.py`, `backend/onyx/db/connector_manage_access.py`, `backend/onyx/server/documents/manage_access.py` | access-control, authorization |
 | `terraform-provider-onyx/internal/provider/user_group_resource.go`, `terraform-provider-onyx/docs/resources/user_group.md`, `terraform-provider-onyx/examples/resources/onyx_user_group/`, `terraform-provider-onyx/README.md` | authorization |
-| `backend/ee/onyx/external_permissions/`, `backend/onyx/db/permission_sync_attempt.py` | permission-sync |
+| `backend/ee/onyx/external_permissions/`, `backend/onyx/external_permissions/`, `backend/onyx/db/permission_sync_attempt.py` | permission-sync |
 | `backend/ee/onyx/external_permissions/post_query_censoring.py` | access-control |
-| `backend/ee/onyx/background/celery/tasks/doc_permission_syncing/`, `backend/ee/onyx/background/celery/tasks/external_group_syncing/`, `backend/ee/onyx/db/external_perm.py`, `backend/ee/onyx/db/document.py` | permission-sync |
+| `backend/ee/onyx/background/celery/tasks/doc_permission_syncing/`, `backend/ee/onyx/background/celery/tasks/external_group_syncing/`, `backend/ee/onyx/db/external_perm.py`, `backend/ee/onyx/db/document.py`, `backend/onyx/background/celery/tasks/doc_permission_syncing/`, `backend/onyx/background/celery/tasks/external_group_syncing/`, `backend/onyx/db/external_perm.py`, `backend/onyx/db/permission_sync_schedule.py`, `backend/onyx/db/sync_attempt_error.py` | permission-sync |
 | `backend/onyx/background/celery/tasks/shared/lease_heartbeat.py` | permission-sync |
 | `backend/onyx/federated_connectors/`, `backend/onyx/db/federated.py`, `backend/onyx/server/federated/` | federated-search |
 | `backend/onyx/server/features/web_search/`, `backend/onyx/server/manage/web_search/`, `backend/onyx/db/web_search.py` | web-search |

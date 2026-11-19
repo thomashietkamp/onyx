@@ -9,6 +9,12 @@ from sqlalchemy.orm import Session
 
 from onyx.auth.permissions import has_global_permission, require_permission
 from onyx.auth.scoped_permissions import assert_within_scope
+from onyx.background.celery.tasks.doc_permission_syncing.tasks import (
+    send_doc_permission_sync,
+)
+from onyx.background.celery.tasks.external_group_syncing.tasks import (
+    send_external_group_sync,
+)
 from onyx.background.celery.tasks.pruning.tasks import (
     try_creating_prune_generator_task,
 )
@@ -77,6 +83,7 @@ from onyx.db.enums import (
     IndexingStatus,
     Permission,
     PermissionSyncStatus,
+    SyncEntityKind,
     SyncType,
 )
 from onyx.db.index_attempt import (
@@ -107,12 +114,23 @@ from onyx.db.permission_sync_attempt import (
     cancel_locked_or_queued_doc_permission_sync_attempt__no_commit,
     cancel_queued_external_group_sync_attempt__no_commit,
     get_latest_doc_permission_sync_attempt_for_cc_pair,
+    get_open_doc_permission_sync_attempt,
+    get_open_external_group_sync_attempt,
     lock_open_doc_permission_sync_attempt__no_commit,
 )
 from onyx.db.search_settings import get_current_search_settings
+from onyx.db.sync_attempt_error import (
+    count_sync_attempt_errors,
+    get_sync_attempt_errors_page,
+    resolve_sync_attempt_errors_without_retry__no_commit,
+)
 from onyx.db.sync_record import fetch_latest_sync_record
 from onyx.error_handling.error_codes import OnyxErrorCode
 from onyx.error_handling.exceptions import OnyxError
+from onyx.external_permissions.sync_params import (
+    source_requires_doc_sync,
+    source_requires_external_group_sync,
+)
 from onyx.redis.redis_connector import RedisConnector
 from onyx.redis.redis_connector_utils import get_deletion_attempt_snapshot
 
@@ -156,6 +174,7 @@ from onyx.server.documents.models import (
     IndexAttemptStageMetricSnapshot,
     IndexAttemptStageMetricsResponse,
     PaginatedReturn,
+    SyncAttemptErrorSnapshot,
     synthesize_unaccounted,
 )
 from onyx.server.models import StatusResponse
@@ -1542,3 +1561,149 @@ def dissociate_credential_from_connector(
             extra={"connector_id": connector_id, "credential_id": credential_id},
         )
     return result
+
+
+def _assert_perm_synced(cc_pair: ConnectorCredentialPair, needs_groups: bool) -> None:
+    source = cc_pair.connector.source
+    supported = (
+        source_requires_external_group_sync(source)
+        if needs_groups
+        else source_requires_doc_sync(source)
+    )
+    if cc_pair.access_type not in AccessType.perm_synced_types() or not supported:
+        raise OnyxError(
+            OnyxErrorCode.INVALID_INPUT,
+            "This connector does not sync permissions from its source",
+        )
+
+
+@router.get("/admin/cc-pair/{cc_pair_id}/sync-permissions")
+def get_cc_pair_doc_permission_sync(
+    cc_pair_id: int,
+    user: User = Depends(
+        require_permission(Permission.READ_CONNECTORS, allow_scope=True)
+    ),
+    db_session: Session = Depends(get_session),
+) -> datetime | None:
+    """When the open doc permission sync was queued, or None."""
+    _get_readable_cc_pair_or_raise(cc_pair_id, db_session, user)
+    attempt = get_open_doc_permission_sync_attempt(cc_pair_id, db_session)
+    return attempt.time_created if attempt else None
+
+
+@router.post("/admin/cc-pair/{cc_pair_id}/sync-permissions")
+def sync_cc_pair_doc_permissions(
+    cc_pair_id: int,
+    user: User = Depends(
+        require_permission(Permission.MANAGE_CONNECTORS, allow_scope=True)
+    ),
+    db_session: Session = Depends(get_session),
+) -> StatusResponse[int]:
+    """Starts a doc permission sync now. 409 while one is open."""
+    cc_pair = _get_operated_cc_pair_or_raise(cc_pair_id, db_session, user)
+    _assert_perm_synced(cc_pair, needs_groups=False)
+    attempt_id = send_doc_permission_sync(
+        client_app, cc_pair_id, get_current_tenant_id(), db_session
+    )
+    if attempt_id is None:
+        raise OnyxError(OnyxErrorCode.CONFLICT, "A permission sync is already running")
+    return StatusResponse(
+        success=True, message="Permission sync started", data=attempt_id
+    )
+
+
+@router.get("/admin/cc-pair/{cc_pair_id}/sync-groups")
+def get_cc_pair_external_group_sync(
+    cc_pair_id: int,
+    user: User = Depends(
+        require_permission(Permission.READ_CONNECTORS, allow_scope=True)
+    ),
+    db_session: Session = Depends(get_session),
+) -> datetime | None:
+    """When the open group sync was queued, or None."""
+    _get_readable_cc_pair_or_raise(cc_pair_id, db_session, user)
+    attempt = get_open_external_group_sync_attempt(cc_pair_id, db_session)
+    return attempt.time_created if attempt else None
+
+
+@router.post("/admin/cc-pair/{cc_pair_id}/sync-groups")
+def sync_cc_pair_external_groups(
+    cc_pair_id: int,
+    user: User = Depends(
+        require_permission(Permission.MANAGE_CONNECTORS, allow_scope=True)
+    ),
+    db_session: Session = Depends(get_session),
+) -> StatusResponse[int]:
+    """Starts a group sync now. 409 while one is open."""
+    cc_pair = _get_operated_cc_pair_or_raise(cc_pair_id, db_session, user)
+    _assert_perm_synced(cc_pair, needs_groups=True)
+    attempt_id = send_external_group_sync(
+        client_app, cc_pair_id, get_current_tenant_id(), db_session
+    )
+    if attempt_id is None:
+        raise OnyxError(OnyxErrorCode.CONFLICT, "A group sync is already running")
+    return StatusResponse(success=True, message="Group sync started", data=attempt_id)
+
+
+@router.get("/admin/cc-pair/{cc_pair_id}/sync-errors")
+def get_cc_pair_sync_errors(
+    cc_pair_id: int,
+    include_resolved: bool = Query(False),
+    page_num: int = Query(0, ge=0),
+    page_size: int = Query(10, ge=1, le=100),
+    attempt_id: int | None = Query(None),
+    entity_kind: SyncEntityKind | None = Query(None),
+    q: str | None = Query(None, max_length=200),
+    order: IndexAttemptErrorOrder = IndexAttemptErrorOrder.TIME,
+    user: User = Depends(
+        require_permission(Permission.READ_CONNECTORS, allow_scope=True)
+    ),
+    db_session: Session = Depends(get_session),
+) -> PaginatedReturn[SyncAttemptErrorSnapshot]:
+    """The users and groups the pair's group syncs skipped, paginated."""
+    _get_readable_cc_pair_or_raise(cc_pair_id, db_session, user)
+    query = (q or "").strip() or None
+    total = count_sync_attempt_errors(
+        db_session, cc_pair_id, include_resolved, attempt_id, entity_kind, query
+    )
+    rows = get_sync_attempt_errors_page(
+        db_session,
+        cc_pair_id,
+        include_resolved,
+        attempt_id,
+        entity_kind,
+        query,
+        order,
+        page_num,
+        page_size,
+    )
+    return PaginatedReturn(
+        items=[SyncAttemptErrorSnapshot.from_model(row) for row in rows],
+        total_items=total,
+    )
+
+
+@router.post("/admin/cc-pair/{cc_pair_id}/sync-errors/resolve")
+def resolve_cc_pair_sync_errors(
+    cc_pair_id: int,
+    request: IndexAttemptErrorsResolveRequest,
+    user: User = Depends(
+        require_permission(Permission.MANAGE_CONNECTORS, allow_scope=True)
+    ),
+    db_session: Session = Depends(get_session),
+) -> IndexAttemptErrorsResolveResponse:
+    """Resolves the chosen failed users and groups without retry."""
+    _get_operated_cc_pair_or_raise(cc_pair_id, db_session, user)
+    resolved_ids = resolve_sync_attempt_errors_without_retry__no_commit(
+        db_session, cc_pair_id, set(request.error_ids)
+    )
+    db_session.commit()
+    emit_audit_event(
+        AuditAction.CC_PAIR_UPDATE,
+        AuditOutcome.SUCCESS,
+        actor=actor_from_user(user),
+        resource_type="cc_pair",
+        resource_id=cc_pair_id,
+        extra={"resolved_sync_error_ids": resolved_ids},
+    )
+    return IndexAttemptErrorsResolveResponse(resolved_count=len(resolved_ids))

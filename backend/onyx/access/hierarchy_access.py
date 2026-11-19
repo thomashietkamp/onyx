@@ -1,14 +1,16 @@
 from sqlalchemy.orm import Session
 
+from onyx.db.external_perm import fetch_external_group_ids_for_user
 from onyx.db.models import User
 from onyx.utils.variable_functionality import fetch_versioned_implementation
 
 
-def _get_user_external_group_ids(
-    db_session: Session,  # noqa: ARG001
-    user: User,  # noqa: ARG001
-) -> list[str]:
-    return []
+def _get_user_external_group_ids(db_session: Session, user: User) -> list[str]:
+    """The user's synced external groups, in their stored (source-prefixed)
+    form. Anonymous users have none."""
+    if user.is_anonymous:
+        return []
+    return sorted(fetch_external_group_ids_for_user(db_session, user.id))
 
 
 def get_user_external_group_ids(db_session: Session, user: User) -> list[str]:

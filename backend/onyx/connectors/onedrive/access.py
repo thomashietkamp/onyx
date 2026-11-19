@@ -5,10 +5,7 @@ from onyx.access.models import ExternalAccess
 from onyx.access.utils import build_ext_group_name_for_onyx
 from onyx.configs.constants import DocumentSource
 from onyx.connectors.onedrive.models import OneDrivePermission
-from onyx.utils.variable_functionality import (
-    fetch_versioned_implementation,
-    global_version,
-)
+from onyx.utils.variable_functionality import fetch_versioned_implementation
 
 
 def get_onedrive_external_access(
@@ -18,9 +15,6 @@ def get_onedrive_external_access(
     *,
     add_prefix: bool,
 ) -> ExternalAccess:
-    if not global_version.is_ee_version():
-        return ExternalAccess.empty()
-
     mapper = cast(
         Callable[[list[OneDrivePermission], str, bool, bool], ExternalAccess],
         fetch_versioned_implementation(

@@ -8,7 +8,16 @@
 **Verified against:** `a4e97fcea1` (2026-10-29)
 **Edition:** EE only, on the business tier. A CE deployment has no doc sync and
 no group sync, and its documents are never narrowed below the access type that
-an admin sets.
+an admin sets. This fork has MIT doc sync and group sync for the Microsoft sources
+(SharePoint, OneDrive, Teams, and Outlook without groups). The registry is
+`backend/onyx/external_permissions/sync_params.py`. A source not in it cannot be
+set to Sync. The tasks are in `backend/onyx/background/celery/tasks/doc_permission_syncing/`
+and `external_group_syncing/`, and the writes are in `backend/onyx/db/external_perm.py`.
+The beat checks run on the primary worker; the generator tasks run on the
+heavy worker. The doc sync writes only the documents the source lists. A
+document the source no longer lists keeps its ACL until pruning removes it. A
+failed group sync removes no membership. The routes `sync-permissions`,
+`sync-groups` and `sync-errors` are in `backend/onyx/server/documents/cc_pair.py`.
 
 ## User experience
 

@@ -66,6 +66,11 @@ What Onyx does with it:
   placeholders.
 - `web/src/proxy.ts:EE_ROUTES` still rewrites EE admin paths to `/ee/...`,
   which now returns 404. Each path goes away when its feature is rebuilt.
+- Permission sync (access type "Auto Sync") works only for the Microsoft
+  sources: SharePoint, OneDrive, Teams and Outlook. Other sources cannot be
+  set to Auto Sync yet. The connector's app registration needs the Graph
+  permissions `Group.Read.All` and `GroupMember.Read.All` for group sync. The
+  heavy worker runs the syncs, every 30 minutes for each pair.
 - Upstream CI workflows still call `scripts.seed_dev_license`.
 - The integration suite still holds tests for EE features (user groups,
   connector access per group). They fail until those features exist here.

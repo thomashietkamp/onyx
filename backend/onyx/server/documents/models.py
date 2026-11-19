@@ -43,6 +43,8 @@ from onyx.db.enums import (
     HierarchyNodeType,
     PermissionSyncStatus,
     ProcessingMode,
+    SyncAttemptErrorResolvedReason,
+    SyncEntityKind,
     SyncStatus,
 )
 from onyx.db.index_attempt_metrics_models import (
@@ -60,6 +62,7 @@ from onyx.db.models import (
     IndexAttempt,
     IndexAttemptStageMetric,
     IndexingStatus,
+    SyncAttemptError,
     SyncRecord,
     TaskStatus,
 )
@@ -1554,3 +1557,35 @@ class EventSourceSnapshot(BaseModel):
     # False until an active event connector exists; until then a provider's
     # validation handshake fails.
     receiving: bool
+
+
+class SyncAttemptErrorSnapshot(BaseModel):
+    """A user or group that a group sync skipped whole."""
+
+    id: int
+    connector_credential_pair_id: int
+    external_group_sync_attempt_id: int
+    entity_kind: SyncEntityKind
+    entity_id: str
+    entity_name: str | None
+    failure_message: str
+    time_created: datetime
+    is_resolved: bool
+    resolved_reason: SyncAttemptErrorResolvedReason | None
+    resolved_at: datetime | None
+
+    @classmethod
+    def from_model(cls, error: SyncAttemptError) -> "SyncAttemptErrorSnapshot":
+        return cls(
+            id=error.id,
+            connector_credential_pair_id=error.connector_credential_pair_id,
+            external_group_sync_attempt_id=error.external_group_sync_attempt_id,
+            entity_kind=error.entity_kind,
+            entity_id=error.entity_id,
+            entity_name=error.entity_name,
+            failure_message=error.failure_message,
+            time_created=error.time_created,
+            is_resolved=error.is_resolved,
+            resolved_reason=error.resolved_reason,
+            resolved_at=error.resolved_at,
+        )

@@ -137,5 +137,12 @@ beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_monitor-alembic: Checks tenant Alembic revi
 beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_monitor-celery-queues: Records cloud queue lengths every 30 seconds.
 beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_monitor-celery-pidbox: Cleans old pidboxes every 4 hours.
 beat {ONYX_CLOUD_CELERY_TASK_PREFIX}_check-available-tenants: Keeps provisioned tenants available every 2 minutes.
+
+# Permission sync
+task CHECK_FOR_DOC_PERMISSIONS_SYNC: Beat check that finds cc-pairs due for a doc permission sync and sends their generator tasks.
+task CONNECTOR_PERMISSION_SYNC_GENERATOR_TASK: Long crawl that copies each document's ACL from the source, on the heavy worker.
+task CHECK_FOR_EXTERNAL_GROUP_SYNC: Beat check that finds cc-pairs due for a group sync and sends their generator tasks.
+task CONNECTOR_EXTERNAL_GROUP_SYNC_GENERATOR_TASK: Long directory read that copies the members of the source's groups, on the heavy worker.
+
 task CHECK_TTL_MANAGEMENT_TASK: Beat check that deletes chat sessions past the workspace retention period.
 beat check-ttl-management: Retention is enforced continuously, so expired chats go within the hour.

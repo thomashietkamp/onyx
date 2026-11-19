@@ -9,6 +9,7 @@ from onyx.access.models import DocumentAccess
 from onyx.access.utils import (
     EXTERNAL_GROUP_ACL_PREFIX,
     USER_EMAIL_ACL_PREFIX,
+    prefix_external_group,
     prefix_user_email,
     prefix_user_group,
 )
@@ -38,6 +39,10 @@ from onyx.db.document import (
     get_cc_pair_ids_for_documents,
 )
 from onyx.db.engine.sql_engine import get_session_with_current_tenant
+from onyx.db.external_perm import (
+    fetch_external_group_ids_for_user,
+    fetch_synced_access_for_documents,
+)
 from onyx.db.models import User, UserFile
 from onyx.db.user_file import fetch_user_files_with_access_relationships
 from onyx.db.user_group import (
@@ -60,12 +65,15 @@ def _get_access_for_document(
     )
 
     group_names = fetch_user_group_names_for_documents(db_session, [document_id])
+    synced_emails, synced_group_ids, synced_public = fetch_synced_access_for_documents(
+        db_session, [document_id]
+    ).get(document_id, ([], [], False))
     doc_access = DocumentAccess.build(
         user_emails=info[1] if info and info[1] else [],
         user_groups=sorted(group_names.get(document_id, set())),
-        external_user_emails=[],
-        external_user_group_ids=[],
-        is_public=info[2] if info else False,
+        external_user_emails=synced_emails,
+        external_user_group_ids=synced_group_ids,
+        is_public=(info[2] if info else False) or synced_public,
     )
 
     return doc_access
@@ -100,14 +108,18 @@ def _get_access_for_documents(
         document_ids=document_ids,
     )
     group_names = fetch_user_group_names_for_documents(db_session, document_ids)
+    synced = fetch_synced_access_for_documents(db_session, document_ids)
     doc_access = {}
     for document_id, user_emails, is_public in document_access_info:
+        synced_emails, synced_group_ids, synced_public = synced.get(
+            document_id, ([], [], False)
+        )
         doc_access[document_id] = DocumentAccess.build(
             user_emails=[email for email in user_emails if email],
             user_groups=sorted(group_names.get(document_id, set())),
-            is_public=is_public,
-            external_user_emails=[],
-            external_user_group_ids=[],
+            is_public=is_public or synced_public,
+            external_user_emails=synced_emails,
+            external_user_group_ids=synced_group_ids,
         )
 
     # Sometimes the document has not been indexed by the indexing job yet, in those cases
@@ -151,12 +163,15 @@ def _get_acl_for_user(
     if db_session is None:
         with get_session_with_current_tenant() as session:
             group_names = fetch_user_group_names_for_user(session, user.id)
+            external_group_ids = fetch_external_group_ids_for_user(session, user.id)
     else:
         group_names = fetch_user_group_names_for_user(db_session, user.id)
+        external_group_ids = fetch_external_group_ids_for_user(db_session, user.id)
     return {
         prefix_user_email(user.email),
         *(prefix_user_email(email) for email in user.prior_emails),
         *(prefix_user_group(name) for name in group_names),
+        *(prefix_external_group(group_id) for group_id in external_group_ids),
         PUBLIC_DOC_PAT,
     }
 
