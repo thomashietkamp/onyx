@@ -104,9 +104,6 @@ export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
 
-// Enterprise Edition specific routes (ONLY these get /ee rewriting)
-const EE_ROUTES = ["/admin/performance/usage", "/admin/service-accounts"];
-
 function withSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set("Content-Security-Policy", CSP_HEADER);
   return response;
@@ -149,15 +146,6 @@ export async function proxy(request: NextRequest) {
       const loginUrl = new URL(loginPath({ next: pathWithQuery }), request.url);
       return withSecurityHeaders(NextResponse.redirect(loginUrl));
     }
-  }
-
-  // Enterprise Edition: Rewrite EE-specific routes to /ee prefix. The /ee
-  // layout turns away a deployment whose license does not cover them.
-  if (EE_ROUTES.some((route) => pathname.startsWith(route))) {
-    const newUrl = new URL(`/ee${pathname}`, request.url);
-    return withSecurityHeaders(
-      NextResponse.rewrite(newUrl, { request: { headers: requestHeaders } })
-    );
   }
 
   return withSecurityHeaders(

@@ -61,16 +61,17 @@ What Onyx does with it:
   `ENCRYPTION_WRITE_KEY_ID`), but it cannot read ciphertext that upstream EE
   wrote. After a key change, run `python -m scripts.encrypt_stored_secrets`.
   That script covers encrypted database columns only.
-- Search mode (`web/src/sections/search/SearchUI.tsx`) and document search in
-  the agent knowledge pane (`web/src/lib/search/documentSearch.ts`) are
-  placeholders.
-- `web/src/proxy.ts:EE_ROUTES` still rewrites EE admin paths to `/ee/...`,
-  which now returns 404. Each path goes away when its feature is rebuilt.
-- Permission sync (access type "Auto Sync") works only for the Microsoft
-  sources: SharePoint, OneDrive, Teams and Outlook. Other sources cannot be
-  set to Auto Sync yet. The connector's app registration needs the Graph
-  permissions `Group.Read.All` and `GroupMember.Read.All` for group sync. The
-  heavy worker runs the syncs, every 30 minutes for each pair.
+- Permission sync (access type "Auto Sync") works for SharePoint, OneDrive,
+  Teams, Outlook, Google Drive, Gmail, Confluence, Slack, GitHub, Box, Canvas,
+  Egnyte, Linear, YouTrack, Azure Data Lake, Zoom and HubSpot. Jira and
+  Salesforce cannot be set to Auto Sync: Jira issue security levels are not
+  read, and Salesforce records need post-query censoring. For the Microsoft
+  sources, the app registration needs the Graph permissions `Group.Read.All`
+  and `GroupMember.Read.All`. The heavy worker runs the syncs, every 30
+  minutes for each pair. None of the sources is tested against a live account.
+- The fork runs at the Enterprise tier (`backend/onyx/utils/tier.py`). Every
+  user keeps the CE right to create agents (`add:agents`), also when their
+  groups do not grant it.
 - Upstream CI workflows still call `scripts.seed_dev_license`.
 - The integration suite still holds tests for EE features (user groups,
   connector access per group). They fail until those features exist here.

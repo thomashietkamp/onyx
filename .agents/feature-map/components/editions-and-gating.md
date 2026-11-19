@@ -290,10 +290,9 @@ to the no-op when no PostHog client is configured.
 - `add-paid-route` **Add a paid route.** Copy the `/admin/hooks` entry in
   `backend/ee/onyx/configs/license_enforcement_config.py:PATH_PREFIX_MIN_TIER`;
   that map is the current set. Check that no allowed prefix covers it
-  ([[#allowlist-skips-tier-gate]]). Lock the web entry with `useTierAtLeast`. A
-  page under `web/src/app/ee/admin/` loads at its `/admin/...` path only when that
-  path is in `web/src/proxy.ts:EE_ROUTES`; `web/src/app/ee/layout.tsx` then
-  applies the `ee_features_enabled` redirect. A missing gate leaves the feature
+  ([[#allowlist-skips-tier-gate]]). Lock the web entry with `useTierAtLeast`. In
+  this fork every admin page lives under `web/src/app/admin/`; `web/src/proxy.ts`
+  has no `/ee` rewrite. A missing gate leaves the feature
   open on Community and no test fails, so add a case to
   `backend/tests/unit/ee/onyx/server/middleware/test_tier_gate.py`.
 - `add-paid-field` **Add a paid field in a shared route.** Copy `search_ui_enabled` (Business)

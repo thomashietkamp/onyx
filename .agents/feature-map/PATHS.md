@@ -360,7 +360,7 @@ covers new files that match it.
 | `web/src/proxy.ts`, `web/src/app/ee/layout.tsx`, `web/src/app/ee/EEFeatureRedirect.tsx` | editions-and-gating |
 | `web/src/app/admin/hooks/`, `web/src/ee/views/admin/HooksPage/`, `web/src/ee/hooks/`, `web/src/views/admin/HooksPage/`, `web/src/lib/hookExtensions/` | hooks |
 | `web/src/app/ee/admin/standard-answer/`, `web/src/components/standardAnswers/` | standard-answers |
-| `web/src/app/ee/admin/performance/`, `web/src/app/ee/admin/export-logs/`, `web/src/app/admin/tracing/`, `web/src/app/admin/systeminfo/`, `web/src/views/admin/TracingPage/`, `web/src/views/admin/WorkspaceAnalyticsPage/`, `web/src/views/admin/CostOverridesPanel.tsx`, `web/src/views/admin/PerUserUsagePanel.tsx`, `web/src/views/admin/SystemUsagePanel.tsx` | observability |
+| `web/src/app/ee/admin/performance/`, `web/src/app/ee/admin/export-logs/`, `web/src/app/admin/tracing/`, `web/src/app/admin/systeminfo/`, `web/src/views/admin/TracingPage/`, `web/src/views/admin/WorkspaceAnalyticsPage/`, `web/src/views/admin/CostOverridesPanel.tsx`, `web/src/views/admin/PerUserUsagePanel.tsx`, `web/src/views/admin/SystemUsagePanel.tsx`, `web/src/views/admin/UsagePage.tsx`, `web/src/app/admin/performance/` | observability |
 | `web/src/sections/usage/`, `web/src/lib/usage/`, `web/src/lib/tracing/` | observability |
 | `web/src/lib/analytics/` | observability, editions-and-gating |
 | `web/src/app/ee/admin/theme/`, `web/src/app/admin/theme/`, `web/src/views/admin/BrandingPage.tsx`, `web/src/lib/settings/brandingSvc.ts`, `web/src/lib/app/components/Logo.tsx`, `web/src/lib/app/components/LanguageSelect.tsx`, `web/src/lib/analytics/shared.tsx` | whitelabelling-and-theme |
