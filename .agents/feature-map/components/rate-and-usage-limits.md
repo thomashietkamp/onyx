@@ -8,7 +8,11 @@
 **Edition:** CE enforces GLOBAL token budgets only. EE adds USER and USER_GROUP
 scope and is the only edition that can create a budget. Tenant usage limits are
 on by default only on cloud (`USAGE_LIMITS_ENABLED`). HTTP, signup and invite
-limits are CE.
+limits are CE. This fork has the four scopes and the admin API in MIT code:
+`backend/onyx/server/query_and_chat/token_limit.py:_check_spend_limits`
+(with `is_shared_spend_principal`), `backend/onyx/server/spending_limits/api.py`
+and `backend/onyx/db/spending_limits.py:replace_card_limits__no_commit`. A save
+updates a row that keeps its bucket in place, so its reset and baselines stay.
 
 ---
 

@@ -188,6 +188,7 @@ from onyx.server.security.api import admin_router as security_admin_router
 from onyx.server.security.store import seed_jwt_settings_from_env
 from onyx.server.settings.api import admin_router as settings_admin_router
 from onyx.server.settings.api import basic_router as settings_router
+from onyx.server.spending_limits.api import router as spending_limits_router
 from onyx.server.sso_discovery import router as sso_discovery_router
 from onyx.server.user_group.api import router as user_group_router
 from onyx.server.utils import BasicAuthenticationError
@@ -663,6 +664,7 @@ def get_application(lifespan_override: Lifespan | None = None) -> FastAPI:
         include_router_with_global_prefix_prepended(application, scim_admin_router)
         register_scim_exception_handler(application)
         include_router_with_global_prefix_prepended(application, standard_answer_router)
+        include_router_with_global_prefix_prepended(application, spending_limits_router)
     include_router_with_global_prefix_prepended(application, security_admin_router)
     include_router_with_global_prefix_prepended(application, sso_admin_router)
     include_router_with_global_prefix_prepended(application, llm_admin_router)

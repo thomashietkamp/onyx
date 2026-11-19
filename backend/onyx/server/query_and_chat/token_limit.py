@@ -1,5 +1,5 @@
-"""Spending limit enforcement. CE enforces the workspace pool; EE adds group
-pools and per-user allowances (`ee.onyx.server.query_and_chat.token_limit`).
+"""Spending limit enforcement: the workspace pool, the pools of the user's
+groups, and the user's own allowance.
 
 Two entry points share one strategy: `check_token_rate_limits` checks the
 all-models limits before a request runs, and `check_model_spend_limits` checks
@@ -22,7 +22,9 @@ from onyx.configs.constants import (
     TokenRateLimitPeriod,
     TokenRateLimitScope,
 )
+from onyx.db.api_key import is_api_key_email_address
 from onyx.db.engine.sql_engine import get_session_with_current_tenant
+from onyx.db.enums import AccountType
 from onyx.db.llm import fetch_model_configuration_by_id
 from onyx.db.models import TokenRateLimit, User
 from onyx.db.token_limit import (
@@ -36,10 +38,14 @@ from onyx.db.token_limit import (
 )
 from onyx.db.user_usage import (
     TokenUsageBucket,
+    get_group_cost_cents_buckets_since,
+    get_group_token_buckets_since,
     get_limit_usage_start,
     get_period_window_reset,
     get_total_cost_cents_buckets_since,
     get_total_token_buckets_since,
+    get_user_cost_cents_buckets_since,
+    get_user_token_buckets_since,
     sum_limit_usage,
 )
 from onyx.error_handling.error_codes import OnyxErrorCode
@@ -78,8 +84,23 @@ def _run_spend_limit_check(user: User, model_configuration_id: int | None) -> No
     )(user, model_configuration_id)
 
 
-def _check_spend_limits(_: User, model_configuration_id: int | None) -> None:
+def is_shared_spend_principal(user: User) -> bool:
+    """A principal that carries many people's traffic, such as a service
+    account or an API key. It gets the workspace pools only: a per-user
+    budget would throttle all its callers as one."""
+    return user.account_type in (
+        AccountType.ANONYMOUS,
+        AccountType.BOT,
+        AccountType.SERVICE_ACCOUNT,
+    ) or is_api_key_email_address(user.email)
+
+
+def _check_spend_limits(user: User, model_configuration_id: int | None) -> None:
     _user_is_rate_limited_by_global(model_configuration_id)
+    if is_shared_spend_principal(user):
+        return
+    _user_is_rate_limited_by_group_pools(user.id, model_configuration_id)
+    _user_is_rate_limited_by_allowance(user.id, model_configuration_id)
 
 
 def check_global_token_rate_limits() -> None:
@@ -304,6 +325,95 @@ def _user_is_rate_limited_by_global(model_configuration_id: int | None) -> None:
     # Outside the session: the error looks up the model label in its own session.
     if reset := latest_reset(exhausted_windows(windows, usage)):
         raise_rate_limited(TokenRateLimitScope.GLOBAL, reset, model_configuration_id)
+
+
+"""
+Group pools and per-user allowances
+"""
+
+
+def _user_is_rate_limited_by_group_pools(
+    user_id: UUID, model_configuration_id: int | None
+) -> None:
+    """The user passes when any of their groups with a pool has room. Group
+    pools never block across groups."""
+    with get_session_with_current_tenant() as db_session:
+        limits_by_group = fetch_user_group_enforced_token_rate_limits(
+            db_session, user_id, TokenRateLimitScope.USER_GROUP, model_configuration_id
+        )
+        all_limits = [row for rows in limits_by_group.values() for row in rows]
+        baselines = fetch_pool_usage_baselines(db_session, all_limits)
+        windows_by_group = {
+            group_id: budget_windows(limits, group_id, baselines)
+            for group_id, limits in limits_by_group.items()
+        }
+        windows_by_group = {g: w for g, w in windows_by_group.items() if w}
+        if not windows_by_group:
+            return
+
+        now = datetime.now(timezone.utc)
+        group_ids = list(windows_by_group)
+        all_windows = [w for windows in windows_by_group.values() for w in windows]
+        token_usage: dict[int, list[tuple[datetime, float]]] = {}
+        cost_usage: dict[int, list[tuple[datetime, float]]] = {}
+        if token_cutoff := usage_cutoff(now, all_windows, BudgetUnit.TOKENS):
+            token_usage = {
+                group_id: token_buckets(buckets)
+                for group_id, buckets in get_group_token_buckets_since(
+                    db_session, group_ids, token_cutoff, model_configuration_id
+                ).items()
+            }
+        if cost_cutoff := usage_cutoff(now, all_windows, BudgetUnit.COST):
+            cost_usage = get_group_cost_cents_buckets_since(
+                db_session, group_ids, cost_cutoff, model_configuration_id
+            )
+
+    resets: list[datetime] = []
+    for group_id, windows in windows_by_group.items():
+        usage = WindowUsage(
+            tokens=token_usage.get(group_id, []),
+            cost_cents=cost_usage.get(group_id, []),
+        )
+        reset = latest_reset(exhausted_windows(windows, usage))
+        if reset is None:
+            return
+        resets.append(reset)
+    # Every pool is used up: the first one to clear lets the user through.
+    raise_rate_limited(
+        TokenRateLimitScope.USER_GROUP, min(resets), model_configuration_id
+    )
+
+
+def _user_is_rate_limited_by_allowance(
+    user_id: UUID, model_configuration_id: int | None
+) -> None:
+    with get_session_with_current_tenant() as db_session:
+        windows = fetch_member_allowance(db_session, user_id, model_configuration_id)
+        if not windows:
+            return
+        now = datetime.now(timezone.utc)
+        usage = WindowUsage()
+        if token_cutoff := usage_cutoff(now, windows, BudgetUnit.TOKENS):
+            usage.tokens = token_buckets(
+                get_user_token_buckets_since(
+                    db_session, str(user_id), token_cutoff, model_configuration_id
+                )
+            )
+        if cost_cutoff := usage_cutoff(now, windows, BudgetUnit.COST):
+            usage.cost_cents = get_user_cost_cents_buckets_since(
+                db_session, str(user_id), cost_cutoff, model_configuration_id
+            )
+
+    exhausted = exhausted_windows(windows, usage)
+    if reset := latest_reset(exhausted):
+        from_group = any(window.user_group_id is not None for window, _ in exhausted)
+        raise_rate_limited(
+            TokenRateLimitScope.USER_GROUP_MEMBER
+            if from_group
+            else TokenRateLimitScope.USER,
+            reset,
+            model_configuration_id,
+        )
 
 
 """

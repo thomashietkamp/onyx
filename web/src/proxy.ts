@@ -107,7 +107,6 @@ export const config = {
 // Enterprise Edition specific routes (ONLY these get /ee rewriting)
 const EE_ROUTES = [
   "/admin/performance/usage",
-  "/admin/spending-limits",
   "/admin/performance/analytics",
   "/admin/performance/query-history",
   "/admin/performance/custom-analytics",
