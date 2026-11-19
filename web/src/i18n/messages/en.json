@@ -17321,6 +17321,9 @@
     "filters": {
       "allSources": "All Sources ({count})",
       "source": "{source} ({count})"
+    },
+    "history": {
+      "title": "Recent searches"
     }
   }
 }

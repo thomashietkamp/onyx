@@ -141,6 +141,7 @@ from onyx.server.features.web_search.api import router as web_search_router
 from onyx.server.federated.api import router as federated_router
 from onyx.server.gateway.api import router as llm_gateway_router
 from onyx.server.kg.api import admin_router as kg_admin_router
+from onyx.server.license.api import router as fork_license_router
 from onyx.server.log_export.api import router as log_export_router
 from onyx.server.manage.administrative import router as admin_router
 from onyx.server.manage.code_interpreter.api import (
@@ -685,6 +686,7 @@ def get_application(lifespan_override: Lifespan | None = None) -> FastAPI:
         include_router_with_global_prefix_prepended(application, log_export_router)
         include_router_with_global_prefix_prepended(application, llm_gateway_router)
         include_router_with_global_prefix_prepended(application, search_mode_router)
+        include_router_with_global_prefix_prepended(application, fork_license_router)
     include_router_with_global_prefix_prepended(application, security_admin_router)
     include_router_with_global_prefix_prepended(application, sso_admin_router)
     include_router_with_global_prefix_prepended(application, llm_admin_router)

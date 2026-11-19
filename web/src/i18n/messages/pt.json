@@ -17321,6 +17321,9 @@
     "filters": {
       "allSources": "Todas as fontes ({count})",
       "source": "{source} ({count})"
+    },
+    "history": {
+      "title": "Pesquisas recentes"
     }
   }
 }

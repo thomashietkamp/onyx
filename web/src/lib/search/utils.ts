@@ -56,3 +56,22 @@ export const openDocument = (
     updatePresentingDocument?.(document);
   }
 };
+
+/** The user's last distinct queries, newest first, without the current one. */
+export function recentQueries(
+  queries: readonly string[],
+  current: string | null,
+  limit: number
+): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const query of queries) {
+    const key = query.trim().toLowerCase();
+    if (!key || key === current?.trim().toLowerCase() || seen.has(key))
+      continue;
+    seen.add(key);
+    out.push(query.trim());
+    if (out.length === limit) break;
+  }
+  return out;
+}

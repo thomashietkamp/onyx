@@ -65,6 +65,8 @@ export interface QueryControllerValue {
   ) => Promise<void>;
   /** Re-run the current search query with updated server-side filters */
   refineSearch: (filters: BaseFilters) => Promise<void>;
+  /** Search for a query directly, as search mode, keeping the current filters */
+  runQuery: (query: string) => Promise<void>;
   /** Reset all state to initial values */
   reset: () => void;
 }
@@ -82,6 +84,7 @@ export const QueryControllerContext = createContext<QueryControllerValue>({
     onChat(_q);
   },
   refineSearch: async () => undefined,
+  runQuery: async () => undefined,
   reset: () => undefined,
 });
 
@@ -221,6 +224,15 @@ export function QueryControllerProvider({
     [currentQuery, runSearch]
   );
 
+  const runQuery = useCallback(
+    async (query: string) => {
+      const trimmed = query.trim();
+      if (!trimmed) return;
+      await runSearch(trimmed, currentFilters);
+    },
+    [currentFilters, runSearch]
+  );
+
   const reset = useCallback(() => {
     abortInFlight();
     setPhase("idle");
@@ -250,6 +262,7 @@ export function QueryControllerProvider({
       error: results.error,
       submit,
       refineSearch,
+      runQuery,
       reset,
     }),
     [
@@ -260,6 +273,7 @@ export function QueryControllerProvider({
       currentFilters,
       submit,
       refineSearch,
+      runQuery,
       reset,
     ]
   );

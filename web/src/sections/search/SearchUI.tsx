@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import useSWR from "swr";
 import { useTranslations } from "next-intl";
 import {
   InputDateRangePicker,
@@ -14,6 +15,7 @@ import { SvgNoResult, SvgTimeout } from "@opal/illustrations";
 import { getSourceMetadata } from "@/lib/connectors/utils";
 import type { ValidSources } from "@/lib/connectors/types/source";
 import {
+  fetchSearchHistory,
   rankSearchResults,
   withUpdatedAtRange,
 } from "@/lib/search/documentSearch";
@@ -25,9 +27,13 @@ import {
   countDocumentsBySource,
   documentMatchesAnySource,
   openExternalLink,
+  recentQueries,
 } from "@/lib/search/utils";
 import { useQueryController } from "@/providers/QueryControllerProvider";
 import SearchResultCard from "@/sections/search/SearchResultCard";
+
+const RECENT_SEARCH_LIMIT = 6;
+const SEARCH_HISTORY_KEY = "search-history";
 
 export interface SearchUIProps {
   onDocumentClick: (doc: MinimalOnyxDocument) => void;
@@ -49,7 +55,19 @@ export default function SearchUI({ onDocumentClick }: SearchUIProps) {
     currentFilters,
     error,
     refineSearch,
+    runQuery,
   } = useQueryController();
+  const history = useSWR(
+    // Refetched after each search, so the list includes it.
+    [SEARCH_HISTORY_KEY, currentQuery],
+    () => fetchSearchHistory(RECENT_SEARCH_LIMIT * 3),
+    { revalidateOnFocus: false }
+  );
+  const recent = recentQueries(
+    (history.data?.search_queries ?? []).map((entry) => entry.query),
+    currentQuery,
+    RECENT_SEARCH_LIMIT
+  );
   const [sourceFilter, setSourceFilter] = useState<ValidSources | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>(undefined);
 
@@ -200,6 +218,34 @@ export default function SearchUI({ onDocumentClick }: SearchUIProps) {
       )}
 
       {body}
+
+      {recent.length > 0 && state.phase !== "searching" && (
+        <Section gap={0.25} alignItems="start" height="auto">
+          <Text font="secondary-body" color="text-03" as="p">
+            {t("history.title")}
+          </Text>
+          <Section
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="start"
+            gap={0.25}
+            height="auto"
+            className="flex-wrap"
+          >
+            {recent.map((query) => (
+              <SelectButton
+                key={query}
+                size="sm"
+                variant="select-filter"
+                state="empty"
+                onClick={() => void runQuery(query)}
+              >
+                {query}
+              </SelectButton>
+            ))}
+          </Section>
+        </Section>
+      )}
     </Section>
   );
 }

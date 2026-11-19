@@ -80,7 +80,6 @@ Requesty, Azure OpenAI and self-hosted models. See `fork/litellm/README.md`.
 - Document ACLs name Onyx groups by name (`group:<name>`). After a rename,
   another group that takes the old name matches the old ACLs until the
   document resync of the renamed group finishes.
-- No screen shows the search history yet; `GET /search/search-history` works.
 - Not rebuilt, because nothing calls them: `GET /manage/admin/manage-access-prefill`
   and `POST /enterprise-settings/refresh-token`. Cloud-only parts (billing,
   licenses, tenants, connector OAuth, post-query censoring for Salesforce) are

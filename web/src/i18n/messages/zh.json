@@ -17321,6 +17321,9 @@
     "filters": {
       "allSources": "所有来源 ({count})",
       "source": "{source} ({count})"
+    },
+    "history": {
+      "title": "最近搜索"
     }
   }
 }
