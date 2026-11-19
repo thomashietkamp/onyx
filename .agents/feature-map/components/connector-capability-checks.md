@@ -8,7 +8,10 @@
 **Verified against:** `a4e97fcea1` (2026-10-29)
 **Edition:** CE runs INDEXING checks. EE adds DOC_PERMISSION_SYNC and
 EXTERNAL_GROUP_SYNC checks (`ee/onyx/connectors/capability_checks.py`) for the
-sources that sync permissions.
+sources that sync permissions. This fork registers them in MIT code
+(`backend/onyx/connectors/capability_checks/perm_sync.py`), only for sources
+in the sync registry, and `backend/onyx/connectors/capability_applicability.py`
+derives the capabilities from that registry.
 
 ---
 

@@ -77,9 +77,7 @@ Requesty, Azure OpenAI and self-hosted models. See `fork/litellm/README.md`.
 - The fork runs at the Enterprise tier (`backend/onyx/utils/tier.py`). Every
   user keeps the CE right to create agents (`add:agents`), also when their
   groups do not grant it.
-- The connector form runs no credential checks for permission sync
-  (`onyx/connectors/capability_applicability.py` and `perm_sync_valid.py` do
-  not exist). Missing source rights show up as a failed sync attempt instead.
+- No screen shows the search history yet; `GET /search/search-history` works.
 - Not rebuilt, because nothing calls them: `GET /manage/admin/manage-access-prefill`
   and `POST /enterprise-settings/refresh-token`. Cloud-only parts (billing,
   licenses, tenants, connector OAuth, post-query censoring for Salesforce) are

@@ -128,7 +128,7 @@ def get_capability_checks(source: DocumentSource) -> list[CapabilityCheck]:
     if not checks and source_has_settings_probe(source):
         checks.append(_ConnectorSettingsFallbackCheck(source))
     get_perm_sync_checks = fetch_ee_implementation_or_noop(
-        "onyx.connectors.capability_checks",
+        "onyx.connectors.capability_checks.perm_sync",
         "get_perm_sync_capability_checks",
         noop_return_value=[],
     )

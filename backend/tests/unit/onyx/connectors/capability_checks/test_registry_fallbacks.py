@@ -109,11 +109,14 @@ def test_fallback_check_calls_validate_connector_settings() -> None:
     assert output.summary == "Connected"
 
 
-def test_oss_build_only_has_indexing_capability() -> None:
-    """Verifies the EE-noop path: perm-sync capabilities do not exist on OSS."""
-    # Under test and postcondition.
-    # Google Drive is sync-capable on EE, so it is the strongest witness that
-    # the OSS noop returns INDEXING only.
+def test_perm_sync_capabilities_follow_the_sync_registry() -> None:
+    """A source in the sync registry has the perm-sync capabilities; one that
+    cannot be set to Sync has INDEXING only."""
     assert get_applicable_capabilities(DocumentSource.GOOGLE_DRIVE) == {
+        CredentialCapability.INDEXING,
+        CredentialCapability.DOC_PERMISSION_SYNC,
+        CredentialCapability.EXTERNAL_GROUP_SYNC,
+    }
+    assert get_applicable_capabilities(DocumentSource.JIRA) == {
         CredentialCapability.INDEXING
     }
