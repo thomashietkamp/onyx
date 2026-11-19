@@ -15,8 +15,10 @@ Each item carries its URL, state, and type as metadata. The connector does not i
 Onyx checks GitLab for new and changed items every 30 minutes by default.
 You can change **Refresh Every** on the connector.
 
-Permission sync is not available for GitLab.
-Everyone who can see the connector's documents in Onyx can see every indexed item.
+Onyx can copy the GitLab permissions of each item. See [Permission sync](#permission-sync). Without permission sync,
+everyone who can see the connector's documents in Onyx can see every indexed item.
+
+Onyx removes items that are deleted in GitLab when it prunes the connector.
 
 ## Setting up
 
@@ -63,7 +65,8 @@ Everyone who can see the connector's documents in Onyx can see every indexed ite
 
   <Step title="Choose document access">
     Under **Document Access**, select who can see the indexed items.
-    **Specific Groups** is available on the Business and Enterprise plans and on Onyx Cloud.
+    **Sync with GitLab** gives each Onyx user the access they have in GitLab; see [Permission sync](#permission-sync).
+    **Specific Groups** and **Sync with GitLab** are available on the Business and Enterprise plans and on Onyx Cloud.
     Then click **Create Connector**.
   </Step>
 </Steps>
@@ -76,3 +79,50 @@ Self-hosted deployments can also index the text files in the project.
 Set the `GITLAB_CONNECTOR_INCLUDE_CODE_FILES` environment variable to `true` and restart Onyx.
 See [Configuration](/deployment/configuration/configuration).
 The setting applies to every GitLab connector in the deployment.
+
+## Permission sync
+
+Set **Document Access** to **Sync with GitLab** when you create the connector.
+An Onyx user then sees only the GitLab items they can read in GitLab.
+
+| Project visibility | Who sees the items in Onyx |
+| --- | --- |
+| Public | Every Onyx user |
+| Internal, self-managed GitLab | Every active GitLab user who is not an external user, and the project members |
+| Internal, GitLab.com | Only the project members |
+| Private | Only the project members |
+
+A project member is a direct member, a member of a parent group, or a member of a group that the project is shared with.
+The member's role sets what they see:
+
+- **Code files** and **merge requests** need the Reporter role or higher.
+- **Issues** need the Guest role or higher.
+- **Confidential issues** need the Reporter role or higher.
+  The author and the assignees of a confidential issue also see it, in every project.
+
+When a project sets **Repository**, **Merge requests**, or **Issues** to **Only Project Members**,
+or turns the feature off, only the project members see those items, with the roles above.
+Onyx never gives more access than GitLab gives. Users with the Planner role do not see confidential issues in Onyx.
+
+### Matching GitLab users to Onyx users
+
+Onyx matches users by email. The GitLab email must equal the Onyx sign-in email, ignoring case.
+GitLab shows a user's email only to administrators. For other tokens,
+Onyx uses the **Public email** that the user sets on their GitLab profile.
+A user without a public email sees no private items.
+
+### Requirements for the token
+
+- Use a token with the `read_api` scope from a user who can read the project and its confidential issues.
+- On a self-managed instance, create the token as an administrator.
+  If the instance uses Admin Mode, also select the `admin_mode` scope.
+  An administrator token lets Onyx read every user's email and external status.
+- Without an administrator token, only users with a public email get access.
+  Internal projects are then visible only to their members, because Onyx cannot tell which users are external.
+- On GitLab.com, Onyx cannot list all users. Ask each user to set a public email.
+- When a sync run fails, Onyx keeps the last synced permissions. Fix a failing sync promptly.
+
+<Note>
+  Permission sync is available on the Business and Enterprise plans and on Onyx Cloud. On the Community Edition,
+  **Sync with GitLab** is locked, and connectors are visible to everyone.
+</Note>

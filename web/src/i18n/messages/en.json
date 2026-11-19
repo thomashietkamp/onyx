@@ -2437,6 +2437,9 @@
         },
         "syncNotice": "Connect as a workspace member, not a guest, who belongs to every private team you want to index. Onyx cannot see private teams the connected user is not in. Issues in public teams are searchable by every workspace member, and issues in private or restricted teams by their members."
       },
+      "gitlab": {
+        "syncNotice": "Use a token with the read_api scope from a user who can read the project. Onyx matches GitLab users by email, and GitLab shows emails only to admins. On a self-managed instance, use an admin token. Without one, only users with a public email get access, and internal projects are searchable only by their members. On gitlab.com, each user must set a public email."
+      },
       "add": {
         "authorizeButton": {
           "label": "Authorize with {source}",

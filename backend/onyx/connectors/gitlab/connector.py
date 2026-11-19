@@ -9,6 +9,7 @@ from urllib.parse import urlsplit
 import gitlab
 import pytz
 import requests
+from gitlab.exceptions import GitlabGetError
 from gitlab.v4.objects import Project
 
 from onyx.configs.app_configs import (
@@ -18,19 +19,35 @@ from onyx.configs.app_configs import (
 from onyx.configs.constants import DocumentSource
 from onyx.connectors.cross_connector_utils.miscellaneous_utils import time_str_to_utc
 from onyx.connectors.exceptions import ConnectorValidationError
+from onyx.connectors.gitlab.access import (
+    get_code_access,
+    get_issue_access,
+    get_merge_request_access,
+)
+from onyx.connectors.gitlab.models import (
+    GitlabInstanceUser,
+    GitlabIssueReaders,
+    GitlabMember,
+    GitlabProjectAccessInfo,
+)
 from onyx.connectors.interfaces import (
     GenerateDocumentsOutput,
+    GenerateSlimDocumentOutput,
     LoadConnector,
     PollConnector,
     SecondsSinceUnixEpoch,
+    SlimConnector,
+    SlimConnectorWithPermSync,
 )
 from onyx.connectors.models import (
     BasicExpertInfo,
     ConnectorMissingCredentialError,
     Document,
     HierarchyNode,
+    SlimDocument,
     TextSection,
 )
+from onyx.indexing.indexing_heartbeat import IndexingHeartbeatInterface
 from onyx.server.security.models import connector_ssrf_enforced
 from onyx.server.security.store import get_security_settings
 from onyx.utils.datetime import datetime_to_utc
@@ -156,6 +173,96 @@ def _should_exclude(path: str) -> bool:
     return any(fnmatch.fnmatch(path, pattern) for pattern in exclude_patterns)
 
 
+def _iter_repository_blobs(project: Project) -> Iterator[dict[str, Any]]:
+    """Every code file that indexing reads, breadth first.
+
+    Walks the tree level by level, because ``repository_tree`` with recursion
+    loads slowly. An excluded directory is not entered.
+    """
+    queue = deque([""])
+    while queue:
+        current_path = queue.popleft()
+        for entry in project.repository_tree(path=current_path, all=True):
+            if _should_exclude(entry["path"]):
+                continue
+            if entry["type"] == "blob":
+                yield entry
+            elif entry["type"] == "tree":
+                queue.append(entry["path"])
+
+
+_GITLAB_COM_HOSTS = frozenset({"gitlab.com", "www.gitlab.com"})
+_SKIPPED_USER_LOOKUP_CODES = frozenset({403, 404})
+
+
+def is_gitlab_com(instance_url: str) -> bool:
+    return (urlsplit(instance_url).hostname or "").lower() in _GITLAB_COM_HOSTS
+
+
+def gitlab_user_email(attributes: dict[str, Any]) -> str | None:
+    """The address that maps a GitLab user to an Onyx user.
+
+    GitLab returns ``email`` only to an admin token. Otherwise only the
+    ``public_email`` a user chose to show is available.
+    """
+    for key in ("email", "public_email"):
+        value = attributes.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip().lower()
+    return None
+
+
+def _optional_str(value: Any) -> str | None:
+    return value if isinstance(value, str) and value else None
+
+
+class GitlabEmailResolver:
+    """Reads and caches the email of GitLab users by id."""
+
+    def __init__(self, client: gitlab.Gitlab) -> None:
+        self._client = client
+        self._cache: dict[int, str | None] = {}
+
+    def remember(self, user_id: int, email: str | None) -> None:
+        if email is not None:
+            self._cache[user_id] = email
+
+    def email(self, user_id: int) -> str | None:
+        if user_id not in self._cache:
+            try:
+                user = self._client.users.get(user_id)
+                self._cache[user_id] = gitlab_user_email(user.attributes)
+            except GitlabGetError as e:
+                if e.response_code not in _SKIPPED_USER_LOOKUP_CODES:
+                    raise
+                logger.warning("Cannot read GitLab user %s: %s", user_id, e)
+                self._cache[user_id] = None
+        return self._cache[user_id]
+
+
+def _user_ids(value: Any) -> list[int]:
+    """The ids of a user field of an issue: one user dict or a list of them."""
+    users = value if isinstance(value, list) else [value]
+    return [
+        user["id"]
+        for user in users
+        if isinstance(user, dict) and isinstance(user.get("id"), int)
+    ]
+
+
+def _issue_readers(issue: Any, resolver: GitlabEmailResolver) -> GitlabIssueReaders:
+    attributes: dict[str, Any] = issue.attributes
+    if not attributes.get("confidential"):
+        return GitlabIssueReaders(confidential=False)
+    user_ids = _user_ids(attributes.get("author")) + _user_ids(
+        attributes.get("assignees")
+    )
+    emails = frozenset(
+        email for user_id in user_ids if (email := resolver.email(user_id))
+    )
+    return GitlabIssueReaders(confidential=True, author_and_assignee_emails=emails)
+
+
 def _validate_credential_url(gitlab_url: str) -> None:
     enforced: bool = connector_ssrf_enforced(
         get_security_settings().ssrf_protection_level
@@ -192,7 +299,9 @@ class _GitlabSession(requests.Session):
         return super().send(request, **kwargs)
 
 
-class GitlabConnector(LoadConnector, PollConnector):
+class GitlabConnector(
+    LoadConnector, PollConnector, SlimConnector, SlimConnectorWithPermSync
+):
     def __init__(
         self,
         project_owner: str,
@@ -222,43 +331,174 @@ class GitlabConnector(LoadConnector, PollConnector):
         )
         return None
 
-    def _fetch_from_gitlab(
-        self, start: datetime | None = None, end: datetime | None = None
-    ) -> GenerateDocumentsOutput:
+    def _require_client(self) -> gitlab.Gitlab:
         if self.gitlab_client is None:
             raise ConnectorMissingCredentialError("Gitlab")
-        project: Project = self.gitlab_client.projects.get(
+        return self.gitlab_client
+
+    def fetch_project(self) -> Project:
+        """The configured project. Raises when the token cannot read it, so a
+        slim listing never comes back empty on an auth failure."""
+        return self._require_client().projects.get(
             f"{self.project_owner}/{self.project_name}"
         )
 
-        # Fetch code files
+    def project_access_info(self, project: Project) -> GitlabProjectAccessInfo:
+        client = self._require_client()
+        attributes: dict[str, Any] = project.attributes
+        return GitlabProjectAccessInfo(
+            instance_url=client.url,
+            is_gitlab_com=is_gitlab_com(client.url),
+            project_id=int(attributes["id"]),
+            visibility=_optional_str(attributes.get("visibility")),
+            repository_access_level=_optional_str(
+                attributes.get("repository_access_level")
+            ),
+            merge_requests_access_level=_optional_str(
+                attributes.get("merge_requests_access_level")
+            ),
+            issues_access_level=_optional_str(attributes.get("issues_access_level")),
+        )
+
+    def email_resolver(self) -> GitlabEmailResolver:
+        return GitlabEmailResolver(self._require_client())
+
+    def list_project_members(self, project: Project) -> list[GitlabMember]:
+        """Members with their effective access: direct, inherited from parent
+        groups, and through groups the project is shared with."""
+        members: list[GitlabMember] = []
+        for member in project.members_all.list(iterator=True):
+            attributes: dict[str, Any] = member.attributes
+            access_level = attributes.get("access_level")
+            members.append(
+                GitlabMember(
+                    user_id=int(attributes["id"]),
+                    access_level=access_level if isinstance(access_level, int) else 0,
+                    state=_optional_str(attributes.get("state")),
+                    membership_state=_optional_str(attributes.get("membership_state")),
+                    email=gitlab_user_email(attributes),
+                )
+            )
+        return members
+
+    def iter_instance_users(self) -> Iterator[GitlabInstanceUser]:
+        for user in self._require_client().users.list(active=True, iterator=True):
+            attributes: dict[str, Any] = user.attributes
+            external = attributes.get("external")
+            yield GitlabInstanceUser(
+                user_id=int(attributes["id"]),
+                email=gitlab_user_email(attributes),
+                state=_optional_str(attributes.get("state")),
+                bot=attributes.get("bot") is True,
+                external=external if isinstance(external, bool) else None,
+            )
+
+    def _retrieve_slim_docs(
+        self,
+        include_permissions: bool,
+        callback: IndexingHeartbeatInterface | None,
+    ) -> GenerateSlimDocumentOutput:
+        """Lists the ids that ``_fetch_from_gitlab`` indexes, without reading
+        file contents."""
+        project = self.fetch_project()
+        info: GitlabProjectAccessInfo | None = (
+            self.project_access_info(project) if include_permissions else None
+        )
+        resolver = self.email_resolver() if include_permissions else None
+
+        def checked(
+            batch: list[SlimDocument | HierarchyNode],
+        ) -> list[SlimDocument | HierarchyNode]:
+            if callback is not None:
+                if callback.should_stop():
+                    raise RuntimeError("gitlab_slim_docs: Stop signal detected")
+                callback.progress("gitlab_slim_docs", len(batch))
+            return batch
+
         if self.include_code_files:
-            # Fetching using BFS as project.report_tree with recursion causing slow load
-            queue = deque([""])  # Start with the root directory
-            while queue:
-                current_path = queue.popleft()
-                files = project.repository_tree(path=current_path, all=True)
-                for file_batch in _batch_gitlab_objects(files, self.batch_size):
-                    code_doc_batch: list[Document | HierarchyNode] = []
-                    for file in file_batch:
-                        if _should_exclude(file["path"]):
-                            continue
+            code_access = get_code_access(info) if info is not None else None
+            for file_batch in _batch_gitlab_objects(
+                _iter_repository_blobs(project), self.batch_size
+            ):
+                yield checked(
+                    [
+                        SlimDocument(id=file["id"], external_access=code_access)
+                        for file in file_batch
+                    ]
+                )
 
-                        if file["type"] == "blob":
-                            code_doc_batch.append(
-                                _convert_code_to_document(
-                                    project,
-                                    file,
-                                    self.gitlab_client.url,
-                                    self.project_name,
-                                    self.project_owner,
-                                )
-                            )
-                        elif file["type"] == "tree":
-                            queue.append(file["path"])
+        if self.include_mrs:
+            mr_access = get_merge_request_access(info) if info is not None else None
+            merge_requests = project.mergerequests.list(
+                state=self.state_filter, iterator=True
+            )
+            for mr_batch in _batch_gitlab_objects(merge_requests, self.batch_size):
+                yield checked(
+                    [
+                        SlimDocument(
+                            id=mr.web_url,
+                            external_access=mr_access,
+                            doc_created_at=_gitlab_datetime_to_utc(mr.created_at),
+                        )
+                        for mr in mr_batch
+                    ]
+                )
 
-                    if code_doc_batch:
-                        yield code_doc_batch
+        if self.include_issues:
+            issues = project.issues.list(state=self.state_filter, iterator=True)
+            for issue_batch in _batch_gitlab_objects(issues, self.batch_size):
+                yield checked(
+                    [
+                        SlimDocument(
+                            id=issue.web_url,
+                            external_access=(
+                                get_issue_access(info, _issue_readers(issue, resolver))
+                                if info is not None and resolver is not None
+                                else None
+                            ),
+                            doc_created_at=_gitlab_datetime_to_utc(issue.created_at),
+                        )
+                        for issue in issue_batch
+                    ]
+                )
+
+    def retrieve_all_slim_docs(
+        self,
+        start: SecondsSinceUnixEpoch | None = None,  # noqa: ARG002
+        end: SecondsSinceUnixEpoch | None = None,  # noqa: ARG002
+        callback: IndexingHeartbeatInterface | None = None,
+    ) -> GenerateSlimDocumentOutput:
+        return self._retrieve_slim_docs(include_permissions=False, callback=callback)
+
+    def retrieve_all_slim_docs_perm_sync(
+        self,
+        start: SecondsSinceUnixEpoch | None = None,  # noqa: ARG002
+        end: SecondsSinceUnixEpoch | None = None,  # noqa: ARG002
+        callback: IndexingHeartbeatInterface | None = None,
+    ) -> GenerateSlimDocumentOutput:
+        return self._retrieve_slim_docs(include_permissions=True, callback=callback)
+
+    def _fetch_from_gitlab(
+        self, start: datetime | None = None, end: datetime | None = None
+    ) -> GenerateDocumentsOutput:
+        client = self._require_client()
+        project = self.fetch_project()
+
+        if self.include_code_files:
+            for file_batch in _batch_gitlab_objects(
+                _iter_repository_blobs(project), self.batch_size
+            ):
+                code_doc_batch: list[Document | HierarchyNode] = [
+                    _convert_code_to_document(
+                        project,
+                        file,
+                        client.url,
+                        self.project_name,
+                        self.project_owner,
+                    )
+                    for file in file_batch
+                ]
+                yield code_doc_batch
 
         if self.include_mrs:
             merge_requests = project.mergerequests.list(

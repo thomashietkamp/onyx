@@ -2437,6 +2437,9 @@
         },
         "syncNotice": "Connectez-vous en tant que membre de l'espace de travail, pas en tant qu'invité, appartenant à chaque équipe privée à indexer. Onyx ne voit pas les équipes privées dont l'utilisateur connecté n'est pas membre. Les tickets des équipes publiques sont consultables par tous les membres de l'espace de travail, ceux des équipes privées ou restreintes par leurs membres."
       },
+      "gitlab": {
+        "syncNotice": "Utilisez un jeton avec la portée read_api d'un utilisateur qui peut lire le projet. Onyx associe les utilisateurs GitLab par e-mail, et GitLab ne montre les e-mails qu'aux administrateurs. Sur une instance autogérée, utilisez un jeton d'administrateur. Sans lui, seuls les utilisateurs avec un e-mail public obtiennent l'accès, et les projets internes ne sont consultables que par leurs membres. Sur gitlab.com, chaque utilisateur doit définir un e-mail public."
+      },
       "add": {
         "authorizeButton": {
           "label": "Autoriser avec {source}",

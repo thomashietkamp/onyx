@@ -2437,6 +2437,9 @@
         },
         "syncNotice": "Conecte-se como membro do workspace, não como convidado, que pertença a todas as equipes privadas que você quer indexar. O Onyx não vê equipes privadas das quais o usuário conectado não faz parte. Issues de equipes públicas podem ser pesquisados por todos os membros do workspace, e os de equipes privadas ou restritas, por seus membros."
       },
+      "gitlab": {
+        "syncNotice": "Use um token com o escopo read_api de um usuário que possa ler o projeto. O Onyx associa os usuários do GitLab pelo e-mail, e o GitLab mostra e-mails apenas para administradores. Em uma instância autogerenciada, use um token de administrador. Sem ele, apenas usuários com e-mail público recebem acesso, e projetos internos só podem ser pesquisados por seus membros. No gitlab.com, cada usuário deve definir um e-mail público."
+      },
       "add": {
         "authorizeButton": {
           "label": "Autorizar com {source}",

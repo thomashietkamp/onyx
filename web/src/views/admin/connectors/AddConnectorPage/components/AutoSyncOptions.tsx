@@ -16,6 +16,7 @@ export default function AutoSyncOptions({
   const t = useTranslations("admin.connectorsList");
   const noticeBySource: Partial<Record<ValidAutoSyncSource, string>> = {
     linear: t("linear.syncNotice"),
+    gitlab: t("gitlab.syncNotice"),
   };
   const notice: string | undefined = noticeBySource[connectorType];
   const { fields } = autoSyncConfigBySource[connectorType];

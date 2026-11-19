@@ -68,6 +68,12 @@ _SOURCE_TO_SYNC_CONFIG: dict[DocumentSource, SyncConfig] = {
     DocumentSource.GITHUB: SyncConfig(
         group_sync="onyx.external_permissions.github.group_sync:github_group_sync"
     ),
+    # Indexing does not read permissions (a load and poll connector, not
+    # CheckpointedConnectorWithPermSync).
+    DocumentSource.GITLAB: SyncConfig(
+        initial_index_should_sync=False,
+        group_sync="onyx.external_permissions.gitlab.group_sync:gitlab_group_sync",
+    ),
     DocumentSource.BOX: SyncConfig(
         group_sync="onyx.external_permissions.box.group_sync:box_group_sync"
     ),

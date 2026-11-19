@@ -67,7 +67,7 @@ Requesty, Azure OpenAI and self-hosted models. See `fork/litellm/README.md`.
   wrote. After a key change, run `python -m scripts.encrypt_stored_secrets`.
   That script covers encrypted database columns only.
 - Permission sync (access type "Auto Sync") works for SharePoint, OneDrive,
-  Teams, Outlook, Google Drive, Gmail, Confluence, Slack, GitHub, Box, Canvas,
+  Teams, Outlook, Google Drive, Gmail, Confluence, Slack, GitHub, GitLab, Box, Canvas,
   Egnyte, Linear, YouTrack, Azure Data Lake, Zoom and HubSpot. Jira and
   Salesforce cannot be set to Auto Sync: Jira issue security levels are not
   read, and Salesforce records need post-query censoring. For the Microsoft
