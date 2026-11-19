@@ -74,6 +74,11 @@ SSO needs `WEB_DOMAIN` set to the tailnet URL.
 `fork/litellm/` holds a LiteLLM Proxy that Onyx uses as one gateway to
 Requesty, Azure OpenAI and self-hosted models. See `fork/litellm/README.md`.
 
+## Langfuse
+
+`fork/langfuse/` holds a self-hosted Langfuse, the only tracing provider the
+fork allows (`TRACING_PROVIDER_ALLOWLIST=langfuse`). See `fork/langfuse/README.md`.
+
 ## Known gaps
 
 - Secret encryption is this fork's own format (AES-256-GCM,

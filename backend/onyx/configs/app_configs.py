@@ -1869,6 +1869,13 @@ SCHEDULED_EVAL_PROJECT = os.environ.get("SCHEDULED_EVAL_PROJECT", "st-dev")
 LANGFUSE_SECRET_KEY = os.environ.get("LANGFUSE_SECRET_KEY") or ""
 LANGFUSE_PUBLIC_KEY = os.environ.get("LANGFUSE_PUBLIC_KEY") or ""
 LANGFUSE_HOST = os.environ.get("LANGFUSE_HOST") or ""  # For self-hosted Langfuse
+# Tracing providers (comma-separated, e.g. "langfuse") an admin may use.
+# Empty means every provider. Others are hidden, refused and never send traces.
+TRACING_PROVIDER_ALLOWLIST: frozenset[str] = frozenset(
+    name.strip().lower()
+    for name in (os.environ.get("TRACING_PROVIDER_ALLOWLIST") or "").split(",")
+    if name.strip()
+)
 
 # Per-process cache TTL for the resolved tracing config; bounds how quickly a UI
 # connect/disconnect takes effect (no restart needed).

@@ -24,6 +24,7 @@ from onyx.tracing.provider_config import (
     EffectiveTracingConfig,
     LangfuseConfig,
     resolve_effective_tracing_config,
+    tracing_provider_allowed,
 )
 from onyx.tracing.validation import validate_tracing_credentials
 from onyx.utils.logger import setup_logger
@@ -98,6 +99,15 @@ def _build_view(
     )
 
 
+def _assert_allowed(provider_type: TracingProviderType) -> None:
+    if not tracing_provider_allowed(provider_type):
+        raise OnyxError(
+            OnyxErrorCode.INVALID_INPUT,
+            f"Tracing provider '{provider_type.value}' is not allowed on this "
+            "deployment (TRACING_PROVIDER_ALLOWLIST).",
+        )
+
+
 @admin_router.get("/providers")
 def list_tracing_providers(
     _: User = Depends(require_permission(Permission.FULL_ADMIN_PANEL_ACCESS)),
@@ -109,6 +119,7 @@ def list_tracing_providers(
             provider_type, fetch_tracing_provider(provider_type, db_session), effective
         )
         for provider_type in TracingProviderType
+        if tracing_provider_allowed(provider_type)
     ]
 
 
@@ -118,6 +129,7 @@ def upsert_tracing_provider_endpoint(
     user: User = Depends(require_permission(Permission.FULL_ADMIN_PANEL_ACCESS)),
     db_session: Session = Depends(get_session),
 ) -> TracingProviderView:
+    _assert_allowed(request.provider_type)
     upsert_tracing_provider(
         provider_type=request.provider_type,
         api_key=request.api_key,
@@ -153,6 +165,7 @@ def test_tracing_provider(
     _: User = Depends(require_permission(Permission.FULL_ADMIN_PANEL_ACCESS)),
     db_session: Session = Depends(get_session),
 ) -> dict[str, str]:
+    _assert_allowed(request.provider_type)
     config = request.config or {}
     api_key = request.api_key
     if request.use_stored_key:
@@ -182,6 +195,7 @@ def adopt_env_tracing_provider(
     db_session: Session = Depends(get_session),
 ) -> TracingProviderView:
     """Copy an env-var-configured provider into a DB row so it can be managed in the UI."""
+    _assert_allowed(provider_type)
     if fetch_tracing_provider(provider_type, db_session) is not None:
         raise OnyxError(
             OnyxErrorCode.CONFLICT,

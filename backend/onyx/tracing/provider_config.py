@@ -13,6 +13,7 @@ from onyx.configs.app_configs import (
     LANGFUSE_HOST,
     LANGFUSE_PUBLIC_KEY,
     LANGFUSE_SECRET_KEY,
+    TRACING_PROVIDER_ALLOWLIST,
 )
 from onyx.db.engine.sql_engine import get_session_with_current_tenant
 from onyx.db.models import TracingProviderConfig
@@ -123,7 +124,31 @@ def _langfuse_from_row(row: TracingProviderConfig) -> LangfuseConfig | None:
     )
 
 
+def tracing_provider_allowed(provider_type: TracingProviderType) -> bool:
+    """False when ``TRACING_PROVIDER_ALLOWLIST`` is set and does not name it."""
+    return (
+        not TRACING_PROVIDER_ALLOWLIST
+        or provider_type.value in TRACING_PROVIDER_ALLOWLIST
+    )
+
+
+def _allowed(config: EffectiveTracingConfig) -> EffectiveTracingConfig:
+    """Drops providers the allowlist leaves out, from env vars and DB rows alike."""
+    return EffectiveTracingConfig(
+        braintrust=config.braintrust
+        if tracing_provider_allowed(TracingProviderType.BRAINTRUST)
+        else None,
+        langfuse=config.langfuse
+        if tracing_provider_allowed(TracingProviderType.LANGFUSE)
+        else None,
+    )
+
+
 def resolve_effective_tracing_config() -> EffectiveTracingConfig:
+    return _allowed(_resolve_effective_tracing_config())
+
+
+def _resolve_effective_tracing_config() -> EffectiveTracingConfig:
     # In multi-tenant (cloud) the UI feature is unsupported — env vars only.
     if MULTI_TENANT:
         return EffectiveTracingConfig(

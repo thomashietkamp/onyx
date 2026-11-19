@@ -68,7 +68,10 @@ export default function TracingPage() {
     <>
       <Shell loading={isLoading} error={loadError}>
         <div className="flex w-full flex-col gap-2">
-          {TRACING_PROVIDER_ORDER.map((providerType) => {
+          {/* The server lists only the providers this deployment allows. */}
+          {TRACING_PROVIDER_ORDER.filter((providerType) =>
+            providers.some((p) => p.provider_type === providerType),
+          ).map((providerType) => {
             const detail = TRACING_PROVIDER_DETAILS[providerType];
             const provider =
               providers.find((p) => p.provider_type === providerType) ?? null;

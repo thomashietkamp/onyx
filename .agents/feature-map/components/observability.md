@@ -18,7 +18,11 @@ stalled query history and usage report jobs. The usage report and the log
 export are MIT code too (`backend/onyx/server/usage_report/`,
 `backend/onyx/server/log_export/`). Every worker app loads the log export
 task, and the export lock is a cache key, so a second start on any API
-replica gets the 429.
+replica gets the 429. `TRACING_PROVIDER_ALLOWLIST`
+(`backend/onyx/tracing/provider_config.py:tracing_provider_allowed`) drops a
+tracing provider it does not name from the effective config, from env vars and
+DB rows alike, so it gets no traces and the admin routes refuse it. The fork
+sets it to `langfuse` and runs Langfuse from `fork/langfuse/`.
 
 ---
 
