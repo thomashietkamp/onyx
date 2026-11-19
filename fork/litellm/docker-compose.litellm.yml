@@ -1,0 +1,56 @@
+# LiteLLM Proxy: one model gateway in front of Azure OpenAI, Claude and
+# self-hosted models. Onyx connects to it as the "LiteLLM Proxy" provider.
+#
+# Run it next to the Onyx stack, in the same Compose project, so Onyx reaches
+# it at http://litellm:4000. Paths are relative to deployment/docker_compose,
+# so always run from there:
+#
+#   cd deployment/docker_compose
+#   docker compose -f docker-compose.yml -f ../../fork/litellm/docker-compose.litellm.yml up -d
+#
+# Fill fork/litellm/.env first (copy env.template). See fork/litellm/README.md.
+name: ${COMPOSE_PROJECT_NAME:-onyx}
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm-database:v1.106.6
+    restart: unless-stopped
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    env_file:
+      - path: ../../fork/litellm/.env
+        required: true
+    environment:
+      DATABASE_URL: postgresql://litellm:${LITELLM_DB_PASSWORD:-litellm}@litellm_db:5432/litellm
+      STORE_MODEL_IN_DB: "False"
+    volumes:
+      - ../../fork/litellm/config.yaml:/app/config.yaml:ro
+    ports:
+      # Only on the host's loopback: Onyx reaches it over the Compose network.
+      - "127.0.0.1:${LITELLM_HOST_PORT:-4000}:4000"
+    depends_on:
+      litellm_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:4000/health/liveliness', timeout=5)\""]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+
+  litellm_db:
+    image: postgres:15.2-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: litellm
+      POSTGRES_PASSWORD: ${LITELLM_DB_PASSWORD:-litellm}
+      POSTGRES_DB: litellm
+    volumes:
+      - litellm_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm -d litellm"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  litellm_db_data:

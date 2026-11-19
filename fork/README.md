@@ -53,6 +53,11 @@ What Onyx does with it:
 - The seeded Admin and Basic groups belong to Onyx; Entra cannot rename,
   change or delete them.
 
+## LiteLLM Proxy
+
+`fork/litellm/` holds a LiteLLM Proxy that Onyx uses as one gateway to Azure
+OpenAI, Claude and self-hosted models. See `fork/litellm/README.md`.
+
 ## Known gaps
 
 - Secret encryption is this fork's own format (AES-256-GCM,
