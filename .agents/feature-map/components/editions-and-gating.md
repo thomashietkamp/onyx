@@ -6,7 +6,12 @@
 
 **Verified against:** `73e0ae3c31` (2026-10-28)
 **Edition:** CE dispatcher, tier order and feature-flag interface. EE
-implementations, the tier gate middleware and the PostHog flag provider.
+implementations, the tier gate middleware and the PostHog flag provider. This fork runs
+at the Enterprise tier with no license: `backend/onyx/utils/tier.py:get_tier`
+returns `FORK_TIER`, its `require_business_tier_*` checks pass, and
+`backend/onyx/server/settings/api.py` sends that tier and
+`ee_features_enabled=True` to the frontend. The dispatcher prefers an MIT
+module at the same path (`fetch_ee_implementation_or_noop`).
 
 ---
 

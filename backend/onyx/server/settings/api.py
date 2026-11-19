@@ -214,9 +214,13 @@ def fetch_settings(
     general_settings = apply_fn(general_settings)
     # The EE apply_fn resolves tier on every path. On CE the stored value is
     # client-writable, so it never counts.
-    resolved_tier = (
-        general_settings.tier if global_version.is_ee_version() else Tier.COMMUNITY
-    )
+    if global_version.is_ee_version():
+        resolved_tier = general_settings.tier
+    else:
+        # The fork's tier is fixed in code; a stored value never counts.
+        resolved_tier = get_current_tier()
+        general_settings.tier = resolved_tier
+        general_settings.ee_features_enabled = True
 
     # Craft workspace instructions are visible to authenticated users (they
     # appear in sandbox AGENTS.md anyway) but not to anonymous visitors.
