@@ -1,5 +1,5 @@
 /** The proxy stamps the request path and query into ORIGINAL_PATH_HEADER on
- * pass-through and on the EE rewrite; requireAuth() turns it into `next`. */
+ * pass-through; requireAuth() turns it into `next`. */
 import { NextRequest } from "next/server";
 import { cookies, headers } from "next/headers";
 import { proxy } from "@/proxy";
@@ -43,15 +43,13 @@ describe("proxy stamps the original path", () => {
     );
   });
 
-  test("on the EE rewrite", async () => {
+  test("on an admin page, with no rewrite", async () => {
     const res = await proxy(
       new NextRequest(`${APP_DOMAIN}/admin/groups?tab=members`, {
         headers: { cookie: `${SERVER_SIDE_ONLY__AUTH_COOKIE_NAME}=session` },
       })
     );
-    expect(res.headers.get("x-middleware-rewrite")).toBe(
-      `${APP_DOMAIN}/ee/admin/groups`
-    );
+    expect(res.headers.get("x-middleware-rewrite")).toBeNull();
     expect(res.headers.get(STAMPED)).toBe("/admin/groups?tab=members");
   });
 

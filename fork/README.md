@@ -72,6 +72,13 @@ What Onyx does with it:
 - The fork runs at the Enterprise tier (`backend/onyx/utils/tier.py`). Every
   user keeps the CE right to create agents (`add:agents`), also when their
   groups do not grant it.
+- The connector form runs no credential checks for permission sync
+  (`onyx/connectors/capability_applicability.py` and `perm_sync_valid.py` do
+  not exist). Missing source rights show up as a failed sync attempt instead.
+- Not rebuilt, because nothing calls them: `GET /manage/admin/manage-access-prefill`
+  and `POST /enterprise-settings/refresh-token`. Cloud-only parts (billing,
+  licenses, tenants, connector OAuth, post-query censoring for Salesforce) are
+  out of scope.
 - Upstream CI workflows still call `scripts.seed_dev_license`.
 - The integration suite still holds tests for EE features (user groups,
   connector access per group). They fail until those features exist here.
