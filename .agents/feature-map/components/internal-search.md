@@ -5,7 +5,12 @@
 > decision model select and expand the best sections. The `/search` API and the EE Search page reuse it.
 
 **Verified against:** `6bac4e012f` (2026-10-29)
-**Edition:** CE. EE adds post-query chunk censoring and the Search page.
+**Edition:** CE. EE adds post-query chunk censoring and the Search page. This fork
+has the Search page in MIT code: `backend/onyx/server/features/search/search_mode.py`
+(routes in `backend/onyx/server/features/search/search_mode_api.py`) calls `search_pipeline` with
+`force_configured_document_set_scope=True`, runs the spend checks before its
+LLM steps (`resolve_search_mode_llms`), and saves each query in `search_query`.
+The page is `web/src/sections/search/SearchUI.tsx`.
 
 ---
 

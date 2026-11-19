@@ -68,7 +68,8 @@ a limited resource calls the check itself, as a FastAPI `Depends` or inline. Use
 `git grep -w check_token_rate_limits` to list the current call sites. Inline
 calls exist where no route dependency can apply: the Slack bot
 (`backend/onyx/onyxbot/slack/handlers/handle_regular_answer.py`), chat session
-naming, the AI Gateway, the EE search flow when it runs LLM steps, and the
+naming, the AI Gateway, the search flow when it runs LLM steps
+(`backend/onyx/server/features/search/search_mode.py:resolve_search_mode_llms`), and the
 indexing pipeline (`check_global_token_rate_limits`, GLOBAL scope, no user).
 
 **Token and cost budgets.** Each `token_rate_limit` row sets a token budget, a

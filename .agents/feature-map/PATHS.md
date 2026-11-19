@@ -77,9 +77,9 @@ covers new files that match it.
 | `backend/onyx/context/` | internal-search |
 | `backend/onyx/context/search/federated/` | federated-search |
 | `backend/onyx/context/search/preprocessing/access_filters.py` | access-control |
-| `backend/onyx/secondary_llm_flows/`, `backend/ee/onyx/secondary_llm_flows/`, `backend/ee/onyx/db/search.py` | internal-search |
+| `backend/onyx/secondary_llm_flows/`, `backend/ee/onyx/secondary_llm_flows/`, `backend/ee/onyx/db/search.py`, `backend/onyx/db/search_history.py`, `backend/onyx/prompts/search_flow_classification.py` | internal-search |
 | `backend/onyx/server/features/search/`, `backend/onyx/server/query_and_chat/query_backend.py`, `backend/ee/onyx/server/query_and_chat/`, `backend/ee/onyx/search/` | internal-search |
-| `web/src/ee/sections/SearchUI.tsx`, `web/src/ee/sections/SearchCard.tsx`, `web/src/ee/lib/search/`, `web/src/ee/providers/QueryControllerProvider.tsx`, `web/src/providers/QueryControllerProvider.tsx`, `web/src/sections/search/SearchUI.tsx`, `web/src/lib/search/documentSearch.ts` | internal-search |
+| `web/src/ee/sections/SearchUI.tsx`, `web/src/ee/sections/SearchCard.tsx`, `web/src/ee/lib/search/`, `web/src/ee/providers/QueryControllerProvider.tsx`, `web/src/providers/QueryControllerProvider.tsx`, `web/src/sections/search/`, `web/src/lib/search/` | internal-search |
 | `backend/onyx/document_index/` | document-index |
 | `backend/onyx/server/manage/opensearch_health/`, `web/src/lib/opensearch-health/`, `web/src/sections/banners/OpenSearchResourceWarning.tsx` | document-index |
 | `backend/onyx/natural_language_processing/` | document-index, internal-search |
