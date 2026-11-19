@@ -375,7 +375,7 @@ export const ADMIN_ROUTES = {
     sidebarLabel: "Groups",
     requiredPermission: Permission.MANAGE_USER_GROUPS,
     section: "Permissions",
-    requiredTier: Tier.BUSINESS,
+    requiredTier: null,
     visibleWhen: null,
   },
   SCIM: {

@@ -14,12 +14,9 @@ from onyx.configs.constants import (
     OnyxRedisConstants,
 )
 from onyx.db.document import stream_document_ids
+from onyx.db.user_group import construct_document_id_select_by_usergroup
 from onyx.redis.redis_object_helper import RedisObjectHelper
 from onyx.redis.tenant_redis_client import TenantRedisClient
-from onyx.utils.variable_functionality import (
-    fetch_versioned_implementation,
-    global_version,
-)
 
 
 class RedisUserGroup(RedisObjectHelper):
@@ -71,17 +68,6 @@ class RedisUserGroup(RedisObjectHelper):
         """
         last_lock_time = time.monotonic()
         num_tasks_sent = 0
-
-        if not global_version.is_ee_version():
-            return 0, 0
-
-        try:
-            construct_document_id_select_by_usergroup = fetch_versioned_implementation(
-                "onyx.db.user_group",
-                "construct_document_id_select_by_usergroup",
-            )
-        except ModuleNotFoundError:
-            return 0, 0
 
         stmt = construct_document_id_select_by_usergroup(int(self._id))
         for doc_id in stream_document_ids(db_session, stmt):

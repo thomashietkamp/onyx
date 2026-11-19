@@ -184,6 +184,7 @@ from onyx.server.security.store import seed_jwt_settings_from_env
 from onyx.server.settings.api import admin_router as settings_admin_router
 from onyx.server.settings.api import basic_router as settings_router
 from onyx.server.sso_discovery import router as sso_discovery_router
+from onyx.server.user_group.api import router as user_group_router
 from onyx.server.utils import BasicAuthenticationError
 from onyx.setup import setup_multitenant_onyx, setup_onyx
 from onyx.tracing.setup import setup_tracing
@@ -651,6 +652,7 @@ def get_application(lifespan_override: Lifespan | None = None) -> FastAPI:
     if not global_version.is_ee_version():
         include_router_with_global_prefix_prepended(application, branding_public_router)
         include_router_with_global_prefix_prepended(application, branding_admin_router)
+        include_router_with_global_prefix_prepended(application, user_group_router)
     include_router_with_global_prefix_prepended(application, security_admin_router)
     include_router_with_global_prefix_prepended(application, sso_admin_router)
     include_router_with_global_prefix_prepended(application, llm_admin_router)

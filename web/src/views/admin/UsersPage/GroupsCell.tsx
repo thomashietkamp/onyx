@@ -14,7 +14,6 @@ import { SvgEdit } from "@opal/icons";
 import { Button, Badge, Text, useCreateModal } from "@opal/components";
 import { Tooltip } from "@opal/components";
 import EditUserModal from "./EditUserModal";
-import { useCanManageGroups } from "@/lib/permissions/hooks";
 import type { UserRow, UserGroupInfo } from "./types";
 
 interface GroupsCellProps {
@@ -41,8 +40,7 @@ export default function GroupsCell({
   const editModal = useCreateModal();
   const [visibleCount, setVisibleCount] = useState<number | null>(null);
   // below Business the editor is empty, so show pills but don't open it
-  const canManageGroups = useCanManageGroups();
-  const editable = Boolean(user.id) && canManageGroups;
+  const editable = Boolean(user.id);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const computeVisibleCount = useCallback(() => {

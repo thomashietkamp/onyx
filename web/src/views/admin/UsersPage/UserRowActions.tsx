@@ -23,7 +23,6 @@ import {
 import { AccountType, UserStatus } from "@/lib/types";
 import { toast } from "@opal/layouts";
 import { approveRequest, setUserAdminAccess } from "./svc";
-import { useCanManageGroups } from "@/lib/permissions/hooks";
 import EditUserModal from "./EditUserModal";
 import {
   CancelInviteModal,
@@ -65,7 +64,6 @@ export default function UserRowActions({
   const actionModal = useCreateModal();
   const [menuOpen, setMenuOpen] = useState(false);
   // below Business the group editor is empty, so don't offer it
-  const canManageGroups = useCanManageGroups();
 
   const openModal = (type: Modal) => {
     setModal(type);
@@ -99,18 +97,17 @@ export default function UserRowActions({
     })();
   };
 
-  const editGroupsItem: DropdownMenuRow[] =
-    user.id && canManageGroups
-      ? [
-          {
-            kind: "action",
-            id: "edit-groups",
-            icon: SvgUsers,
-            title: t("rowActions.editGroups.label"),
-            onSelect: () => openModal(Modal.EDIT_GROUPS),
-          },
-        ]
-      : [];
+  const editGroupsItem: DropdownMenuRow[] = user.id
+    ? [
+        {
+          kind: "action",
+          id: "edit-groups",
+          icon: SvgUsers,
+          title: t("rowActions.editGroups.label"),
+          onSelect: () => openModal(Modal.EDIT_GROUPS),
+        },
+      ]
+    : [];
   const adminAccessItem: DropdownMenuRow[] =
     user.id && user.account_type === AccountType.STANDARD
       ? [

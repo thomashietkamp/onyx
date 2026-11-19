@@ -6,8 +6,10 @@
 
 **Verified against:** `a4e97fcea1` (2026-10-29)
 **Edition:** CE has the `Permission` model, `require_permission`, PAT scopes
-and a fixed set of ungated permissions for every signed-in user. EE adds the
-group admin API: permission grants on groups and group managers.
+and a fixed set of ungated permissions for every signed-in user. In this fork
+the group admin API (permission grants on groups, group managers) is MIT code:
+`backend/onyx/server/user_group/api.py` and the management functions in
+`backend/onyx/db/user_group.py`. Upstream has it in EE.
 
 ---
 
