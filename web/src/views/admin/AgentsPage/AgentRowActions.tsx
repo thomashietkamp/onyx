@@ -13,6 +13,7 @@ import {
 // TODO(@raunakab): migrate to Opal LineItemButton once it supports danger variant
 import { cn, escapeMarkdown, markdown, richNodes } from "@opal/utils";
 import {
+  SvgBarChart,
   SvgMoreHorizontal,
   SvgEdit,
   SvgEye,
@@ -60,8 +61,9 @@ export default function AgentRowActions({
   const canList = can(agent, "list");
   const canUpdateFeaturedStatus = can(agent, "feature");
   const canShare = can(agent, "share");
+  const canViewStats = can(agent, "view_stats");
   const canDeleteRow = !agent.builtin_persona && can(agent, "delete");
-  const hasOverflowItems = canList || canShare || canDeleteRow;
+  const hasOverflowItems = canList || canShare || canViewStats || canDeleteRow;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,14 +80,14 @@ export default function AgentRowActions({
       await action();
       onMutate();
       toast.success(
-        t("rowActions.updateSuccess.message", { name: agent.name })
+        t("rowActions.updateSuccess.message", { name: agent.name }),
       );
       close();
     } catch (err) {
       toast.error(
         err instanceof Error
           ? err.message
-          : t("rowActions.genericError.message")
+          : t("rowActions.genericError.message"),
       );
     } finally {
       setIsSubmitting(false);
@@ -108,7 +110,7 @@ export default function AgentRowActions({
               } else {
                 handleAction(
                   () => toggleAgentListed(agent.id, agent.is_listed),
-                  () => {}
+                  () => {},
                 );
               }
             },
@@ -123,6 +125,17 @@ export default function AgentRowActions({
             icon: SvgShare,
             title: t("rowActions.shareItem.title"),
             onSelect: () => shareModal.toggle(true),
+          },
+        ]
+      : []),
+    ...(canViewStats
+      ? [
+          {
+            kind: "action" as const,
+            id: "stats",
+            icon: SvgBarChart,
+            title: t("rowActions.statsItem.title"),
+            onSelect: () => navigation.go(`/app/agents/stats/${agent.id}`),
           },
         ]
       : []),
@@ -165,7 +178,7 @@ export default function AgentRowActions({
               data-testid={`edit-agent-${agent.id}`}
               onClick={() =>
                 navigation.go(
-                  `/app/agents/edit/${agent.id}?u=${Date.now()}&admin=true`
+                  `/app/agents/edit/${agent.id}?u=${Date.now()}&admin=true`,
                 )
               }
             />
@@ -181,7 +194,7 @@ export default function AgentRowActions({
                 onClick={() =>
                   handleAction(
                     () => toggleAgentListed(agent.id, agent.is_listed),
-                    () => {}
+                    () => {},
                   )
                 }
               />
@@ -190,7 +203,7 @@ export default function AgentRowActions({
               <div
                 className={cn(
                   !agent.is_featured &&
-                    "opacity-0 group-hover/row:opacity-100 transition-opacity"
+                    "opacity-0 group-hover/row:opacity-100 transition-opacity",
                 )}
               >
                 <Button
@@ -222,7 +235,7 @@ export default function AgentRowActions({
             <div
               className={cn(
                 !menuOpen &&
-                  "opacity-0 group-hover/row:opacity-100 transition-opacity"
+                  "opacity-0 group-hover/row:opacity-100 transition-opacity",
               )}
             >
               <Dropdown.Trigger asChild>
@@ -253,7 +266,7 @@ export default function AgentRowActions({
               onClick={() => {
                 handleAction(
                   () => deleteAgent(agent.id),
-                  () => deleteModal.toggle(false)
+                  () => deleteModal.toggle(false),
                 );
               }}
             >
@@ -270,7 +283,7 @@ export default function AgentRowActions({
                     {richNodes(chunks)}
                   </Text>
                 ),
-              })
+              }),
             )}
           </Text>
         </ConfirmationModalLayout>
@@ -291,7 +304,7 @@ export default function AgentRowActions({
               onClick={() => {
                 handleAction(
                   () => toggleAgentFeatured(agent.id, wasFeatured),
-                  () => featuredModal.toggle(false)
+                  () => featuredModal.toggle(false),
                 );
               }}
             >
@@ -320,7 +333,7 @@ export default function AgentRowActions({
         <ConfirmationModalLayout
           icon={SvgEyeOff}
           title={markdown(
-            t("unlistModal.header.title", { name: escapeMarkdown(agent.name) })
+            t("unlistModal.header.title", { name: escapeMarkdown(agent.name) }),
           )}
           onClose={isSubmitting ? undefined : () => unlistModal.toggle(false)}
           submit={
@@ -329,7 +342,7 @@ export default function AgentRowActions({
               onClick={() => {
                 handleAction(
                   () => toggleAgentListed(agent.id, agent.is_listed),
-                  () => unlistModal.toggle(false)
+                  () => unlistModal.toggle(false),
                 );
               }}
             >
