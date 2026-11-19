@@ -233,6 +233,15 @@ def test_list_filters_and_anonymizes(
     )
     assert {s.id for s in for_user.sessions} == {liked.id, mixed.id, plain.id}
 
+    # Anonymized: a per-user list would tie sessions back to the user.
+    with pytest.raises(OnyxError):
+        api.get_chat_sessions_for_user(
+            user_id=owner.id,
+            _=admin,
+            query_history_type=QueryHistoryType.ANONYMIZED,
+            db_session=db_session,
+        )
+
     with pytest.raises(OnyxError) as missing:
         api.get_chat_session_admin(
             chat_session_id=content_free.id,

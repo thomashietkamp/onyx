@@ -156,11 +156,17 @@ def get_chat_sessions_for_user(
     query_history_type: QueryHistoryType = Depends(_query_history_type),
     db_session: Session = Depends(get_session),
 ) -> ChatSessionsForUser:
+    anonymize = anonymizes(query_history_type)
+    if anonymize:
+        # A per-user list would tie the anonymized sessions back to people.
+        raise OnyxError(
+            OnyxErrorCode.INSUFFICIENT_PERMISSIONS,
+            "Query history is anonymized, so sessions cannot be listed per user",
+        )
     rows = fetch_query_history_sessions_for_user(
         db_session, user_id, MAX_SESSIONS_FOR_USER
     )
     first = fetch_first_messages(db_session, [row[0].id for row in rows])
-    anonymize = anonymizes(query_history_type)
     return ChatSessionsForUser(
         sessions=[to_minimal(row, first.get(row[0].id, {}), anonymize) for row in rows]
     )

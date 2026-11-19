@@ -34,7 +34,7 @@ from onyx.db.users import batch_add_ext_perm_user_if_not_exists
 
 class ExternalUserGroup(BaseModel):
     """A group as a source reports it. ``id`` is the source's own id, without
-    the Onyx source prefix."""
+    the Onyx source prefix; ``upsert_external_groups`` adds the prefix."""
 
     id: str
     user_emails: list[str] = Field(default_factory=list)
@@ -89,7 +89,10 @@ def upsert_external_groups(
 
     memberships: list[dict[str, object]] = []
     for group in groups:
-        group_id = prefixed_group_id(group.id, source)
+        # Always prefix: a group sync yields raw source ids, and a source user
+        # may name a group so it starts with the prefix. The idempotent form
+        # would let that group take the id of another group.
+        group_id = build_ext_group_name_for_onyx(group.id, source)
         for email in {e.lower() for e in group.user_emails}:
             user_id = user_id_by_email.get(email)
             if user_id is not None:

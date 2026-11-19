@@ -187,8 +187,9 @@ def _scope_manage_roles(
 ) -> dict[int, ConnectorManageRole]:
     """GATE 2 for a group's manage rows. A connector admin sets any row. Anyone
     else gives a role on a pair only if they hold it there (Editor for EDITOR,
-    Operator or Editor for OPERATOR), and rows on pairs they cannot operate stay
-    as they are."""
+    Operator or Editor for OPERATOR). Rows on pairs they cannot operate stay as
+    they are, and so do EDITOR rows on pairs they cannot edit: removing or
+    lowering one needs the Editor role too."""
     load_cc_pairs(db_session, set(requested))
     if _is_connector_admin(user):
         return requested
@@ -201,11 +202,17 @@ def _scope_manage_roles(
         cc_pair_id: role
         for cc_pair_id, role in current.items()
         if cc_pair_id not in can_operate
+        or (role is ConnectorManageRole.EDITOR and cc_pair_id not in can_edit)
     }
     for cc_pair_id, role in requested.items():
         if current.get(cc_pair_id) == role:
             final[cc_pair_id] = role
             continue
+        if (
+            current.get(cc_pair_id) is ConnectorManageRole.EDITOR
+            and cc_pair_id not in can_edit
+        ):
+            raise OnyxError(OnyxErrorCode.INSUFFICIENT_PERMISSIONS, _SCOPE_DENIAL)
         allowed = can_edit if role is ConnectorManageRole.EDITOR else can_operate
         if cc_pair_id not in allowed:
             raise OnyxError(OnyxErrorCode.INSUFFICIENT_PERMISSIONS, _SCOPE_DENIAL)
@@ -293,6 +300,14 @@ def create_user_group(
     user: User = Depends(_manage_groups_global),
     db_session: Session = Depends(get_session),
 ) -> UserGroupSnapshot:
+    # GATE 2: the new group's connector rows are EDITOR rows, so the caller
+    # must be able to edit each pair, as on an update.
+    _scope_manage_roles(
+        user,
+        db_session,
+        {},
+        dict.fromkeys(request.cc_pair_ids, ConnectorManageRole.EDITOR),
+    )
     group = insert_user_group__no_commit(
         db_session, request.name, request.user_ids, request.cc_pair_ids
     )

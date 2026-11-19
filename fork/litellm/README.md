@@ -29,9 +29,10 @@ proxy also gives rate limits, fallbacks and a cost overview per key.
    cp fork/litellm/env.template fork/litellm/.env
    ```
 
-   - Set `LITELLM_MASTER_KEY` to a random value that starts with `sk-`.
-     Set `LITELLM_SALT_KEY` to a long random string. Do not change the salt
-     key after the first start.
+   - Set `LITELLM_MASTER_KEY`, `LITELLM_SALT_KEY` and `LITELLM_DB_PASSWORD`.
+     The template shows the commands that make random values. The proxy does
+     not start while one of them is empty or a template value. Do not change
+     the salt key or the database password after the first start.
    - **Azure OpenAI:** set the resource URL, the key, the API version and
      `AZURE_OPENAI_GPT4O_MODEL=azure/<deployment name>`.
    - **Requesty:** set `REQUESTY_API_KEY`. `REQUESTY_CLAUDE_SONNET_MODEL` and

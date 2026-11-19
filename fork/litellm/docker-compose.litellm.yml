@@ -15,12 +15,22 @@ services:
   litellm:
     image: ghcr.io/berriai/litellm-database:v1.106.6
     restart: unless-stopped
-    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    # Refuse to start without real keys: anything on the Compose network can
+    # reach the proxy. The keys come from fork/litellm/.env.
+    entrypoint:
+      - sh
+      - -c
+      - |
+        for name in LITELLM_MASTER_KEY LITELLM_SALT_KEY LITELLM_DB_PASSWORD; do
+          eval "value=\$$name"
+          case "$$value" in ""|sk-change-me|change-me*) echo "Set $$name in fork/litellm/.env" >&2; exit 1;; esac
+        done
+        export DATABASE_URL="postgresql://litellm:$${LITELLM_DB_PASSWORD}@litellm_db:5432/litellm"
+        exec docker/prod_entrypoint.sh --config /app/config.yaml --port 4000
     env_file:
       - path: ../../fork/litellm/.env
         required: true
     environment:
-      DATABASE_URL: postgresql://litellm:${LITELLM_DB_PASSWORD:-litellm}@litellm_db:5432/litellm
       STORE_MODEL_IN_DB: "False"
     volumes:
       - ../../fork/litellm/config.yaml:/app/config.yaml:ro
@@ -40,9 +50,18 @@ services:
   litellm_db:
     image: postgres:15.2-alpine
     restart: unless-stopped
+    env_file:
+      - path: ../../fork/litellm/.env
+        required: true
+    entrypoint:
+      - sh
+      - -c
+      - |
+        [ -n "$${LITELLM_DB_PASSWORD}" ] || { echo "Set LITELLM_DB_PASSWORD in fork/litellm/.env" >&2; exit 1; }
+        export POSTGRES_PASSWORD="$${LITELLM_DB_PASSWORD}"
+        exec docker-entrypoint.sh postgres
     environment:
       POSTGRES_USER: litellm
-      POSTGRES_PASSWORD: ${LITELLM_DB_PASSWORD:-litellm}
       POSTGRES_DB: litellm
     volumes:
       - litellm_db_data:/var/lib/postgresql/data
