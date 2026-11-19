@@ -18,16 +18,19 @@ from onyx.db.models import (
     Document,
     DocumentByConnectorCredentialPair,
     DocumentSet__ConnectorCredentialPair,
+    DocumentSet__User,
     DocumentSet__UserGroup,
     FederatedConnector__DocumentSet,
     User,
     User__UserGroup,
+    UserGroup,
 )
 from onyx.db.models import DocumentSet as DocumentSetDBModel
 from onyx.db.scoped_permissions import (
     scoped_group_ids_subquery,
     within_managed_scope_clause,
 )
+from onyx.db.user_group import assert_not_shared_with_default_group
 from onyx.error_handling.error_codes import OnyxErrorCode
 from onyx.error_handling.exceptions import OnyxError
 from onyx.server.features.document_set.models import (
@@ -119,7 +122,17 @@ def _mark_document_set_cc_pairs_as_outdated__no_commit(
 def delete_document_set_privacy__no_commit(
     document_set_id: int, db_session: Session
 ) -> None:
-    """No private document sets in Onyx MIT"""
+    """Removes the users and groups a private document set is shared with."""
+    db_session.execute(
+        delete(DocumentSet__User).where(
+            DocumentSet__User.document_set_id == document_set_id
+        )
+    )
+    db_session.execute(
+        delete(DocumentSet__UserGroup).where(
+            DocumentSet__UserGroup.document_set_id == document_set_id
+        )
+    )
 
 
 def get_document_set_by_id_for_user(
@@ -294,14 +307,35 @@ def get_document_sets_by_ids(
 
 
 def make_doc_set_private(
-    document_set_id: int,  # noqa: ARG001
+    document_set_id: int,
     user_ids: list[UUID] | None,
     group_ids: list[int] | None,
-    db_session: Session,  # noqa: ARG001
+    db_session: Session,
 ) -> None:
-    # May cause error if someone switches down to MIT from EE
-    if user_ids or group_ids:
-        raise NotImplementedError("Onyx MIT does not support private Document Sets")
+    """Replaces the users and groups the document set is shared with. A public
+    set keeps none."""
+    assert_not_shared_with_default_group(db_session, group_ids or [])
+    if group_ids:
+        found = set(
+            db_session.scalars(
+                select(UserGroup.id).where(
+                    UserGroup.id.in_(group_ids),
+                    UserGroup.is_up_for_deletion.is_(False),
+                )
+            ).all()
+        )
+        if missing := set(group_ids) - found:
+            raise ValueError(f"User group(s) not found: {sorted(missing)}")
+    delete_document_set_privacy__no_commit(document_set_id, db_session)
+    db_session.add_all(
+        DocumentSet__User(document_set_id=document_set_id, user_id=user_id)
+        for user_id in dict.fromkeys(user_ids or [])
+    )
+    db_session.add_all(
+        DocumentSet__UserGroup(document_set_id=document_set_id, user_group_id=group_id)
+        for group_id in dict.fromkeys(group_ids or [])
+    )
+    db_session.flush()
 
 
 def check_if_cc_pairs_are_owned_by_groups(

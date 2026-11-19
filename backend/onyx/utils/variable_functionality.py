@@ -158,6 +158,21 @@ def noop_fallback(*args: Any, **kwargs: Any) -> None:
     """
 
 
+@functools.lru_cache(maxsize=None)
+def _fetch_mit_implementation(module: str, attribute: str) -> Any | None:
+    try:
+        mit_module = importlib.import_module(module)
+    except ModuleNotFoundError as e:
+        # Only a missing target module means "no MIT version"; a broken import
+        # inside an existing module must still fail loudly.
+        if e.name is not None and module.startswith(e.name):
+            return None
+        raise
+    if not hasattr(mit_module, attribute):
+        return None
+    return getattr(mit_module, attribute)  # ods: ignore[getattr]
+
+
 def fetch_ee_implementation_or_noop(
     module: str, attribute: str, noop_return_value: Any = None
 ) -> Any:
@@ -176,6 +191,11 @@ def fetch_ee_implementation_or_noop(
         Exception: If EE is enabled but the fetch fails.
     """
     if not global_version.is_ee_version():
+        # This fork rebuilds EE features as MIT code at the same module path, so
+        # an MIT implementation wins over the no-op when one exists.
+        mit_implementation = _fetch_mit_implementation(module, attribute)
+        if mit_implementation is not None:
+            return mit_implementation
         if inspect.iscoroutinefunction(noop_return_value):
 
             async def async_noop(*args: Any, **kwargs: Any) -> Any:

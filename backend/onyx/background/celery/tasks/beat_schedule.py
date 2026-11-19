@@ -49,6 +49,17 @@ CLOUD_DOC_PERMISSION_SYNC_MULTIPLIER_DEFAULT = 1.0
 # tasks that run in either self-hosted on cloud
 beat_task_templates: list[dict] = [
     {
+        "name": "check-ttl-management",
+        "task": OnyxCeleryTask.CHECK_TTL_MANAGEMENT_TASK,
+        "schedule": timedelta(hours=1),
+        "options": {
+            "queue": OnyxCeleryQueues.PRIMARY,
+            "priority": OnyxCeleryPriority.LOW,
+            "expires": BEAT_EXPIRES_DEFAULT,
+            "work_gated": True,
+        },
+    },
+    {
         "name": "cleanup-oauth-provider-grants",
         "task": OnyxCeleryTask.CLEANUP_OAUTH_PROVIDER_GRANTS,
         "schedule": timedelta(days=1),

@@ -47,7 +47,7 @@ covers new files that match it.
 | `backend/onyx/chat/tool_questions.py`, `backend/onyx/db/question_request.py` | mcp-and-custom-tools, tools-framework |
 | `backend/onyx/db/chat_response.py`, `backend/onyx/db/chat_subagents.py`, `backend/onyx/db/chat_inputs.py` | chat-persistence |
 | `backend/onyx/db/chat.py`, `backend/onyx/db/chat_search.py`, `backend/onyx/db/feedback.py` | chat-persistence |
-| `backend/ee/onyx/background/celery/tasks/ttl_management/` | chat-persistence, background-jobs |
+| `backend/ee/onyx/background/celery/tasks/ttl_management/`, `backend/onyx/background/celery/tasks/chat_retention/` | chat-persistence, background-jobs |
 | `backend/onyx/server/query_and_chat/chat_backend.py`, `backend/onyx/server/query_and_chat/models.py`, `backend/onyx/server/query_and_chat/session_loading.py`, `backend/onyx/server/query_and_chat/chat_utils.py` | core-chat-loop, chat-persistence |
 | `backend/onyx/server/query_and_chat/streaming_models.py`, `backend/onyx/server/query_and_chat/placement.py`, `backend/onyx/server/query_and_chat/acp_stream.py` | streaming-protocol |
 | `backend/onyx/server/query_and_chat/token_limit.py` | rate-and-usage-limits |
@@ -90,7 +90,7 @@ covers new files that match it.
 | `backend/model_server/`, `backend/shared_configs/embedding_models.py` | document-index |
 | `backend/onyx/access/`, `backend/ee/onyx/access/`, `backend/onyx/db/document_access.py`, `backend/onyx/db/access.py` | access-control |
 | `backend/onyx/db/document_set.py`, `backend/onyx/db/user_group.py`, `backend/onyx/server/features/document_set/`, `backend/ee/onyx/db/document_set.py` | access-control |
-| `backend/ee/onyx/server/user_group/`, `backend/ee/onyx/db/user_group.py`, `backend/onyx/server/user_group/` | access-control, authorization |
+| `backend/ee/onyx/server/user_group/`, `backend/ee/onyx/db/user_group.py`, `backend/onyx/server/user_group/`, `backend/onyx/db/user_group_management.py`, `backend/onyx/db/cc_pair_data_access.py`, `backend/onyx/db/connector_manage_access.py`, `backend/onyx/server/documents/manage_access.py` | access-control, authorization |
 | `terraform-provider-onyx/internal/provider/user_group_resource.go`, `terraform-provider-onyx/docs/resources/user_group.md`, `terraform-provider-onyx/examples/resources/onyx_user_group/`, `terraform-provider-onyx/README.md` | authorization |
 | `backend/ee/onyx/external_permissions/`, `backend/onyx/db/permission_sync_attempt.py` | permission-sync |
 | `backend/ee/onyx/external_permissions/post_query_censoring.py` | access-control |
@@ -155,7 +155,7 @@ covers new files that match it.
 |---|---|
 | `backend/onyx/auth/`, `backend/ee/onyx/auth/`, `backend/onyx/server/auth/`, `backend/onyx/server/saml*.py`, `backend/onyx/server/oidc_multi.py`, `backend/onyx/server/sso_discovery.py`, `backend/onyx/server/manage/sso/`, `backend/onyx/server/manage/oauth_test.py` | auth-and-identity |
 | `backend/onyx/server/auth/mobile.py`, `backend/onyx/auth/mobile_sso/` | mobile-app, auth-and-identity |
-| `backend/ee/onyx/server/scim/`, `backend/ee/onyx/db/saml.py`, `backend/ee/onyx/db/scim.py`, `backend/ee/onyx/db/tenant_sso_domain.py`, `backend/ee/onyx/background/celery/tasks/sso_domain_revalidation/` | auth-and-identity |
+| `backend/ee/onyx/server/scim/`, `backend/onyx/server/scim/`, `backend/onyx/db/scim.py`, `backend/ee/onyx/db/saml.py`, `backend/ee/onyx/db/scim.py`, `backend/ee/onyx/db/tenant_sso_domain.py`, `backend/ee/onyx/background/celery/tasks/sso_domain_revalidation/` | auth-and-identity |
 | `backend/onyx/db/users.py`, `backend/onyx/db/auth.py`, `backend/onyx/db/api_key.py`, `backend/onyx/db/pat.py`, `backend/onyx/db/saml.py`, `backend/onyx/db/sso_provider.py`, `backend/onyx/server/api_key/`, `backend/onyx/server/pat/`, `backend/onyx/server/manage/users.py` | auth-and-identity |
 | `backend/onyx/oauth/` | auth-and-identity |
 | `backend/onyx/oauth_provider/`, `backend/onyx/db/oauth_provider.py`, `backend/onyx/server/oauth_provider/` | auth-and-identity |

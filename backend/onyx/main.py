@@ -84,6 +84,7 @@ from onyx.server.documents.credential_capabilities import (
 )
 from onyx.server.documents.document import router as document_router
 from onyx.server.documents.index_monitoring import router as index_monitoring_router
+from onyx.server.documents.manage_access import router as cc_pair_access_router
 from onyx.server.documents.standard_oauth import router as standard_oauth_router
 from onyx.server.documents.targeted_reindex import router as targeted_reindex_router
 from onyx.server.features.admin_banner.api import admin_router as admin_banner_router
@@ -154,6 +155,7 @@ from onyx.server.manage.opensearch_health.api import router as opensearch_health
 from onyx.server.manage.search_settings import router as search_settings_router
 from onyx.server.manage.slack_bot import router as slack_bot_management_router
 from onyx.server.manage.sso.api import admin_router as sso_admin_router
+from onyx.server.manage.standard_answer import router as standard_answer_router
 from onyx.server.manage.tracing.api import admin_router as tracing_admin_router
 from onyx.server.manage.users import router as user_router
 from onyx.server.manage.voice.api import admin_router as voice_admin_router
@@ -179,6 +181,9 @@ from onyx.server.query_and_chat.chat_backend import router as chat_router
 from onyx.server.query_and_chat.query_backend import admin_router as admin_query_router
 from onyx.server.query_and_chat.query_backend import basic_router as query_router
 from onyx.server.saml_multi import router as saml_multi_router
+from onyx.server.scim.api import admin_router as scim_admin_router
+from onyx.server.scim.api import register_scim_exception_handler
+from onyx.server.scim.api import router as scim_router
 from onyx.server.security.api import admin_router as security_admin_router
 from onyx.server.security.store import seed_jwt_settings_from_env
 from onyx.server.settings.api import admin_router as settings_admin_router
@@ -653,6 +658,11 @@ def get_application(lifespan_override: Lifespan | None = None) -> FastAPI:
         include_router_with_global_prefix_prepended(application, branding_public_router)
         include_router_with_global_prefix_prepended(application, branding_admin_router)
         include_router_with_global_prefix_prepended(application, user_group_router)
+        include_router_with_global_prefix_prepended(application, cc_pair_access_router)
+        include_router_with_global_prefix_prepended(application, scim_router)
+        include_router_with_global_prefix_prepended(application, scim_admin_router)
+        register_scim_exception_handler(application)
+        include_router_with_global_prefix_prepended(application, standard_answer_router)
     include_router_with_global_prefix_prepended(application, security_admin_router)
     include_router_with_global_prefix_prepended(application, sso_admin_router)
     include_router_with_global_prefix_prepended(application, llm_admin_router)

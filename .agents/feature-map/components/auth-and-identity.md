@@ -189,7 +189,8 @@ unknown emails, so that access is ready at signup ([[permission-sync]]).
    `ee/onyx/auth/sso_domain_verification.py:revalidate_tenant_domains` drops those
    domains from SSO routing.
 6. `scim-authenticates-token` **SCIM authenticates the token, not a user.**
-   `ee/onyx/server/scim/auth.py:verify_scim_token` returns the `ScimToken` row
+   `ee/onyx/server/scim/auth.py:verify_scim_token` (in this fork
+   `backend/onyx/server/scim/auth.py:verify_scim_token`) returns the `ScimToken` row
    and rejects an inactive token. Keep SCIM out of the `current_user` chain.
 7. `oauth-provider-state` **OAuth-provider codes and consent requests are
    single-use, and each piece of state has one cache.**

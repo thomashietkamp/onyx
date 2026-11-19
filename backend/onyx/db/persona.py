@@ -61,6 +61,7 @@ from onyx.db.scoped_permissions import (
     scoped_group_ids_subquery,
     within_managed_scope_clause,
 )
+from onyx.db.user_group import assert_not_shared_with_default_group
 from onyx.error_handling.error_codes import OnyxErrorCode
 from onyx.error_handling.exceptions import OnyxError
 from onyx.integrations.models import ActionSettings, LinkValue, PersonaPluginLink
@@ -320,7 +321,7 @@ def update_persona_access(
     persona_id: int,
     creator_user_id: UUID | None,
     db_session: Session,
-    acting_user: User,  # noqa: ARG001  (lockstep with EE; MIT has no group sharing)
+    acting_user: User,  # noqa: ARG001  (scope is checked by the caller)
     is_public: bool | None = None,
     user_ids: list[UUID] | None = None,
     group_ids: list[int] | None = None,
@@ -354,16 +355,39 @@ def update_persona_access(
             persona_id, desired_user_shares, creator_user_id, db_session
         )
 
-    # MIT doesn't support group-based sharing, so we allow clearing (no-op since
-    # there shouldn't be any) but raise an error if trying to add actual groups.
+    # Group shares follow the same None / empty / replace rule. ``group_shares``
+    # carries a permission per group; ``group_ids`` alone shares as viewer.
     if group_ids is not None or group_shares is not None:
         needs_sync = True
+        desired_group_shares: dict[int, PersonaSharePermission] = (
+            dict(group_shares)
+            if group_shares is not None
+            else dict.fromkeys(group_ids or [], PersonaSharePermission.VIEWER)
+        )
+        assert_not_shared_with_default_group(db_session, desired_group_shares)
+        if desired_group_shares:
+            found = set(
+                db_session.scalars(
+                    select(UserGroup.id).where(
+                        UserGroup.id.in_(desired_group_shares),
+                        UserGroup.is_up_for_deletion.is_(False),
+                    )
+                ).all()
+            )
+            if missing := set(desired_group_shares) - found:
+                raise OnyxError(
+                    OnyxErrorCode.INVALID_INPUT,
+                    f"User group(s) not found: {sorted(missing)}",
+                )
         db_session.query(Persona__UserGroup).filter(
             Persona__UserGroup.persona_id == persona_id
         ).delete(synchronize_session="fetch")
-
-        if group_ids or group_shares:
-            raise NotImplementedError("Onyx MIT does not support group-based sharing")
+        db_session.add_all(
+            Persona__UserGroup(
+                persona_id=persona_id, user_group_id=group_id, permission=permission
+            )
+            for group_id, permission in desired_group_shares.items()
+        )
 
     # When sharing changes, user file ACLs need to be updated in the vector DB
     if needs_sync:
@@ -955,16 +979,13 @@ def transfer_persona_ownership(
     new_owner_user_id: UUID | None = None,
     new_owner_group_id: int | None = None,
 ) -> None:
-    """Move ownership to a single user. Group targets are EE-only (versioned
-    override in ee.onyx.db.persona)."""
-    if new_owner_group_id is not None:
-        raise NotImplementedError("Onyx MIT does not support group ownership")
+    """Move ownership to a single user or to a group."""
     _transfer_persona_ownership(
         persona_id=persona_id,
         user=user,
         db_session=db_session,
         new_owner_user_id=new_owner_user_id,
-        new_owner_group_id=None,
+        new_owner_group_id=new_owner_group_id,
     )
 
 
@@ -2328,3 +2349,14 @@ def user_can_access_persona(
     stmt = select(Persona).where(Persona.id == persona_id, Persona.deleted.is_(False))
     stmt = _add_user_filters(stmt, user, get_editable=get_editable)
     return db_session.scalar(stmt) is not None
+
+
+def fetch_persona_owner_ids(
+    db_session: Session, persona_ids: list[int]
+) -> dict[int, UUID | None]:
+    if not persona_ids:
+        return {}
+    rows = db_session.execute(
+        select(Persona.id, Persona.user_id).where(Persona.id.in_(persona_ids))
+    ).all()
+    return {persona_id: owner_id for persona_id, owner_id in rows}  # noqa: C416

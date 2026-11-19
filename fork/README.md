@@ -30,6 +30,29 @@ Fix each one by hand, then run the script again until it reports
 Tests that use the `enable_ee` fixture check EE behavior. They skip in this
 build (`backend/tests/conftest.py:_ee_enabled`).
 
+## Users and groups from Azure (Entra ID)
+
+Entra ID provisions users and groups into Onyx over SCIM 2.0.
+
+1. In Onyx, open Admin → Permissions → SCIM and generate a token. Copy it;
+   Onyx shows it once. A new token revokes the old one.
+2. In the Entra admin center, open Enterprise applications → New application →
+   Create your own application (non-gallery), then Provisioning → Automatic.
+3. Set Tenant URL to `https://<your-onyx-host>/api/scim/v2` and Secret token to
+   the Onyx token. Test the connection.
+4. Under Mappings, keep `userPrincipalName` → `userName`, `mail` →
+   `emails[type eq "work"].value`, and the group `displayName`. Assign the users
+   and groups to the application and start provisioning.
+
+What Onyx does with it:
+- A provisioned user is matched to an existing Onyx account by email, or
+  created. Deprovisioning deactivates the account and keeps its data.
+- A provisioned group becomes an Onyx user group, with the same members. Give
+  it connectors (data access) and permissions in Admin → Groups. Managers set
+  in Onyx survive the IdP's periodic syncs.
+- The seeded Admin and Basic groups belong to Onyx; Entra cannot rename,
+  change or delete them.
+
 ## Known gaps
 
 - Secret encryption is this fork's own format (AES-256-GCM,

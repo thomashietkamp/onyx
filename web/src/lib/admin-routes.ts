@@ -385,7 +385,7 @@ export const ADMIN_ROUTES = {
     sidebarLabel: "SCIM",
     requiredPermission: Permission.FULL_ADMIN_PANEL_ACCESS,
     section: "Permissions",
-    requiredTier: Tier.ENTERPRISE,
+    requiredTier: null,
     visibleWhen: null,
   },
   API_KEYS: {

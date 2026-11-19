@@ -10,12 +10,7 @@ import { SvgSlack } from "@opal/logos";
 import { useSlackChannelConfigs } from "@/app/admin/bots/[bot-id]/hooks";
 import { useDocumentSets } from "@/app/admin/documents/sets/hooks";
 import { useAgents } from "@/lib/agents/hooks";
-import type { StandardAnswerCategoryResponse } from "@/components/standardAnswers/getStandardAnswerCategoriesIfEE";
-
-// Standard answers are an Enterprise feature that this build does not have.
-const NO_STANDARD_ANSWERS: StandardAnswerCategoryResponse = {
-  paidEnterpriseFeaturesEnabled: false,
-};
+import { useStandardAnswerCategoryResponse } from "@/lib/standardAnswers/hooks";
 
 function EditSlackChannelConfigContent({
   id,
@@ -25,6 +20,10 @@ function EditSlackChannelConfigContent({
   botId: string;
 }) {
   const t = useTranslations("admin.slackBots");
+  const {
+    response: standardAnswerCategoryResponse,
+    isLoading: isStdAnswerLoading,
+  } = useStandardAnswerCategoryResponse();
 
   const {
     data: slackChannelConfigs,
@@ -44,7 +43,11 @@ function EditSlackChannelConfigContent({
     error: agentsError,
   } = useAgents();
 
-  const isLoading = isChannelsLoading || isDocSetsLoading || isAgentsLoading;
+  const isLoading =
+    isChannelsLoading ||
+    isDocSetsLoading ||
+    isAgentsLoading ||
+    isStdAnswerLoading;
 
   const slackChannelConfig = slackChannelConfigs?.find(
     (config) => config.id === Number(id)
@@ -94,7 +97,7 @@ function EditSlackChannelConfigContent({
             slack_bot_id={slackChannelConfig.slack_bot_id}
             documentSets={documentSets}
             personas={agents}
-            standardAnswerCategoryResponse={NO_STANDARD_ANSWERS}
+            standardAnswerCategoryResponse={standardAnswerCategoryResponse}
             existingSlackChannelConfig={slackChannelConfig}
           />
         )}

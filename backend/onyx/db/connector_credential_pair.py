@@ -5,7 +5,7 @@ from typing import TypeVarTuple
 from uuid import UUID
 
 from pydantic import BaseModel
-from sqlalchemy import Select, and_, delete, desc, false, func, or_, select, update
+from sqlalchemy import Select, and_, delete, desc, func, or_, select, update
 from sqlalchemy.orm import Session, aliased, joinedload, selectinload
 from sqlalchemy.sql.elements import ColumnElement
 
@@ -58,14 +58,24 @@ R = TypeVarTuple("R")
 _CONNECTOR_STATE_QUERY_TIMEOUT = "7s"
 
 
-def _build_user_group_cc_pair_access_clause(
-    user_id: UUID,  # noqa: ARG001
-) -> ColumnElement[bool]:
-    """CE has no user groups. The EE version grants pairs where the user is in
-    a data-access group.
-
-    NOTE: EE version in ee.onyx.db.connector_credential_pair."""
-    return false()
+def _build_user_group_cc_pair_access_clause(user_id: UUID) -> ColumnElement[bool]:
+    """Pairs where the user is in a data-access group. A group up for deletion
+    grants nothing."""
+    return (
+        select(UserGroup__CCPairDataAccess.cc_pair_id)
+        .join(
+            User__UserGroup,
+            User__UserGroup.user_group_id == UserGroup__CCPairDataAccess.user_group_id,
+        )
+        .join(UserGroup, UserGroup.id == UserGroup__CCPairDataAccess.user_group_id)
+        .where(
+            UserGroup__CCPairDataAccess.cc_pair_id == ConnectorCredentialPair.id,
+            User__UserGroup.user_id == user_id,
+            UserGroup.is_up_for_deletion.is_(False),
+        )
+        .correlate(ConnectorCredentialPair)
+        .exists()
+    )
 
 
 def build_user_cc_pair_access_filter(user_id: UUID) -> ColumnElement[bool]:

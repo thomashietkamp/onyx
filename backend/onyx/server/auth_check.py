@@ -39,6 +39,10 @@ PUBLIC_ENDPOINT_SPECS = [
     ("/enterprise-settings", {"GET"}),
     ("/enterprise-settings/logo", {"GET"}),
     ("/enterprise-settings/logotype", {"GET"}),
+    # SCIM service discovery: an IdP probes it before it holds a token.
+    ("/scim/v2/ServiceProviderConfig", {"GET"}),
+    ("/scim/v2/ResourceTypes", {"GET"}),
+    ("/scim/v2/Schemas", {"GET"}),
     # just gets the version of Onyx (e.g. 0.3.11)
     ("/version", {"GET"}),
     # Gets stable and beta versions for Onyx docker images

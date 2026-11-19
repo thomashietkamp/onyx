@@ -11,15 +11,14 @@ import { SettingsLayouts } from "@opal/layouts";
 import { SvgSlack } from "@opal/logos";
 import { useDocumentSets } from "@/app/admin/documents/sets/hooks";
 import { useAgents } from "@/lib/agents/hooks";
-import type { StandardAnswerCategoryResponse } from "@/components/standardAnswers/getStandardAnswerCategoriesIfEE";
-
-// Standard answers are an Enterprise feature that this build does not have.
-const NO_STANDARD_ANSWERS: StandardAnswerCategoryResponse = {
-  paidEnterpriseFeaturesEnabled: false,
-};
+import { useStandardAnswerCategoryResponse } from "@/lib/standardAnswers/hooks";
 
 function NewChannelConfigContent({ slackBotId }: { slackBotId: number }) {
   const t = useTranslations("admin.slackBots");
+  const {
+    response: standardAnswerCategoryResponse,
+    isLoading: isStdAnswerLoading,
+  } = useStandardAnswerCategoryResponse();
 
   const {
     data: documentSets,
@@ -33,7 +32,7 @@ function NewChannelConfigContent({ slackBotId }: { slackBotId: number }) {
     error: agentsError,
   } = useAgents();
 
-  if (isDocSetsLoading || isAgentsLoading) {
+  if (isDocSetsLoading || isAgentsLoading || isStdAnswerLoading) {
     return <IconLoader />;
   }
 
@@ -64,7 +63,7 @@ function NewChannelConfigContent({ slackBotId }: { slackBotId: number }) {
       slack_bot_id={slackBotId}
       documentSets={documentSets}
       personas={agents}
-      standardAnswerCategoryResponse={NO_STANDARD_ANSWERS}
+      standardAnswerCategoryResponse={standardAnswerCategoryResponse}
     />
   );
 }

@@ -10,6 +10,7 @@ from onyx.access.utils import (
     EXTERNAL_GROUP_ACL_PREFIX,
     USER_EMAIL_ACL_PREFIX,
     prefix_user_email,
+    prefix_user_group,
 )
 from onyx.configs.constants import (
     CHAT_SESSION_ID_FILE_METADATA_KEY,
@@ -36,8 +37,13 @@ from onyx.db.document import (
     get_access_info_for_documents,
     get_cc_pair_ids_for_documents,
 )
+from onyx.db.engine.sql_engine import get_session_with_current_tenant
 from onyx.db.models import User, UserFile
 from onyx.db.user_file import fetch_user_files_with_access_relationships
+from onyx.db.user_group import (
+    fetch_user_group_names_for_documents,
+    fetch_user_group_names_for_user,
+)
 from onyx.utils.variable_functionality import (
     fetch_ee_implementation_or_noop,
     fetch_versioned_implementation,
@@ -53,9 +59,10 @@ def _get_access_for_document(
         document_id=document_id,
     )
 
+    group_names = fetch_user_group_names_for_documents(db_session, [document_id])
     doc_access = DocumentAccess.build(
         user_emails=info[1] if info and info[1] else [],
-        user_groups=[],
+        user_groups=sorted(group_names.get(document_id, set())),
         external_user_emails=[],
         external_user_group_ids=[],
         is_public=info[2] if info else False,
@@ -92,12 +99,12 @@ def _get_access_for_documents(
         db_session=db_session,
         document_ids=document_ids,
     )
+    group_names = fetch_user_group_names_for_documents(db_session, document_ids)
     doc_access = {}
     for document_id, user_emails, is_public in document_access_info:
         doc_access[document_id] = DocumentAccess.build(
             user_emails=[email for email in user_emails if email],
-            # MIT version will wipe all groups and external groups on update
-            user_groups=[],
+            user_groups=sorted(group_names.get(document_id, set())),
             is_public=is_public,
             external_user_emails=[],
             external_user_group_ids=[],
@@ -126,8 +133,8 @@ def get_access_for_documents(
 
 def _get_acl_for_user(
     user: User,
-    db_session: Session,  # noqa: ARG001
-) -> set[str]:  # noqa: ARG001
+    db_session: Session | None,
+) -> set[str]:
     """Returns a list of ACL entries that the user has access to. This is meant to be
     used downstream to filter out documents that the user does not have access to. The
     user should have access to a document if at least one entry in the document's ACL
@@ -141,9 +148,15 @@ def _get_acl_for_user(
     """
     if user.is_anonymous:
         return {PUBLIC_DOC_PAT}
+    if db_session is None:
+        with get_session_with_current_tenant() as session:
+            group_names = fetch_user_group_names_for_user(session, user.id)
+    else:
+        group_names = fetch_user_group_names_for_user(db_session, user.id)
     return {
         prefix_user_email(user.email),
         *(prefix_user_email(email) for email in user.prior_emails),
+        *(prefix_user_group(name) for name in group_names),
         PUBLIC_DOC_PAT,
     }
 

@@ -7,7 +7,13 @@
 **Verified against:** `a4e97fcea1` (2026-10-29)
 **Edition:** CE builds ACLs from user emails and public flags. EE adds Onyx
 user groups, synced external groups and permissions, per-connector group
-access, hierarchy filtering and post-query censoring.
+access, hierarchy filtering and post-query censoring. In this fork the group
+parts are MIT code: `backend/onyx/db/user_group.py:fetch_user_group_names_for_documents`
+(write side: data-access groups of PRIVATE pairs, manage groups of PUBLIC
+pairs), `fetch_user_group_names_for_user` (read side), the data-access rows in
+`backend/onyx/db/cc_pair_data_access.py`, and the routes in
+`backend/onyx/server/documents/manage_access.py`. The `ee/` paths below
+describe upstream.
 
 ---
 

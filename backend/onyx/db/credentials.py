@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-from sqlalchemy import ColumnElement, Select, delete, exists, false, select, update
+from sqlalchemy import ColumnElement, Select, delete, exists, select, update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import and_, or_
 
@@ -30,7 +30,10 @@ from onyx.db.models import (
     Credential__UserGroup,
     DocumentByConnectorCredentialPair,
     User,
+    User__UserGroup,
+    UserGroup,
 )
+from onyx.db.scoped_permissions import scoped_group_ids_subquery
 from onyx.db.user_group import assert_not_shared_with_default_group
 from onyx.error_handling.error_codes import OnyxErrorCode
 from onyx.error_handling.exceptions import OnyxError
@@ -65,13 +68,25 @@ class CredentialAccessLevel(str, Enum):
     DELETE = "delete"
 
 
-def _build_credential_group_access_clause(
-    user: User,  # noqa: ARG001
-) -> ColumnElement[bool]:
-    """CE has no user groups, so group sharing grants nothing.
-
-    NOTE: EE version in ee.onyx.db.credentials."""
-    return false()
+def _build_credential_group_access_clause(user: User) -> ColumnElement[bool]:
+    """Credentials shared with a group the user acts for: a group they manage
+    for a scoped connector manager, any group they are in for a global one. The
+    caller has already checked that the user holds MANAGE_CONNECTORS."""
+    if has_permission(user, Permission.MANAGE_CONNECTORS) is PermissionAuthority.SCOPED:
+        group_ids: Select = scoped_group_ids_subquery(user)
+    else:
+        group_ids = select(User__UserGroup.user_group_id).where(
+            User__UserGroup.user_id == user.id
+        )
+    return (
+        select(Credential__UserGroup.credential_id)
+        .where(
+            Credential__UserGroup.credential_id == Credential.id,
+            Credential__UserGroup.user_group_id.in_(group_ids),
+        )
+        .correlate(Credential)
+        .exists()
+    )
 
 
 def _add_user_filters(
@@ -128,16 +143,24 @@ def _add_user_filters(
 
 
 def validate_credential_group_ids(
-    db_session: Session,  # noqa: ARG001
+    db_session: Session,
     group_ids: Collection[int],
 ) -> None:
-    """CE has no user groups, so a credential cannot be shared with one.
-
-    NOTE: EE version in ee.onyx.db.credentials."""
-    if group_ids:
+    """The groups a credential is shared with exist, are not being deleted, and
+    are not a default group."""
+    if not group_ids:
+        return
+    assert_not_shared_with_default_group(db_session, group_ids)
+    found = set(
+        db_session.scalars(
+            select(UserGroup.id).where(
+                UserGroup.id.in_(group_ids), UserGroup.is_up_for_deletion.is_(False)
+            )
+        ).all()
+    )
+    if missing := set(group_ids) - found:
         raise OnyxError(
-            OnyxErrorCode.FEATURE_NOT_AVAILABLE,
-            "Sharing a credential with user groups needs the Enterprise Edition.",
+            OnyxErrorCode.INVALID_INPUT, f"User group(s) not found: {sorted(missing)}"
         )
 
 

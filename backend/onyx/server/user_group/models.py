@@ -148,7 +148,16 @@ class SetPermissionsRequest(BaseModel):
 
 class ManagedCCPair(BaseModel):
     cc_pair_id: int
-    role: ConnectorManageRole
+    # Omitted means Editor, the role the group API has always given.
+    role: ConnectorManageRole = ConnectorManageRole.EDITOR
+
+
+class SetDataAccessCCPairsRequest(BaseModel):
+    cc_pair_ids: list[int]
+
+
+class DataAccessCCPairs(BaseModel):
+    cc_pair_ids: list[int]
 
 
 class SetManagedCCPairsRequest(BaseModel):
@@ -157,3 +166,17 @@ class SetManagedCCPairsRequest(BaseModel):
 
 class SetIncognitoRequest(BaseModel):
     enabled: bool
+
+
+class GroupLinkChange(BaseModel):
+    """Agents to share with or unshare from a group."""
+
+    added_ids: list[int] = Field(default_factory=list, alias="added_agent_ids")
+    removed_ids: list[int] = Field(default_factory=list, alias="removed_agent_ids")
+
+
+class GroupDocumentSetChange(BaseModel):
+    added_ids: list[int] = Field(default_factory=list, alias="added_document_set_ids")
+    removed_ids: list[int] = Field(
+        default_factory=list, alias="removed_document_set_ids"
+    )
