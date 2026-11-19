@@ -11,6 +11,7 @@ import {
 } from "@/lib/dateUtils";
 import { SWR_KEYS } from "@/lib/swr-keys";
 import {
+  AgentStats,
   OnyxBotAnalytics,
   PersonaMessageAnalytics,
   PersonaUniqueUserAnalytics,
@@ -134,4 +135,20 @@ export function usePersonaUniqueUsers(
     isLoading,
     refreshPersonaUniqueUsers: () => mutate(url),
   };
+}
+
+export function useAgentStats(
+  agentId: number | null,
+  timeRange: InputDateRangePickerValue
+) {
+  const url = buildApiPath(
+    `/api/analytics/assistant/${agentId}/stats`,
+    analyticsRange(timeRange)
+  );
+  const { data, error, isLoading } = useSWR<AgentStats, Error>(
+    agentId !== null ? url : null,
+    errorHandlingFetcher
+  );
+
+  return { stats: data, error, isLoading };
 }

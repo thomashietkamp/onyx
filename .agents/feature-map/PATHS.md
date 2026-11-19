@@ -183,7 +183,7 @@ covers new files that match it.
 | `backend/onyx/server/metrics/mcp_server.py` | mcp-server, observability |
 | `backend/onyx/server/metrics/mcp_client.py` | mcp-and-custom-tools, observability |
 | `backend/onyx/db/llm_usage.py`, `backend/onyx/db/usage.py`, `backend/onyx/db/user_usage.py`, `backend/onyx/db/system_usage.py`, `backend/onyx/server/features/usage/` | observability |
-| `backend/ee/onyx/server/analytics/`, `backend/ee/onyx/db/analytics.py`, `backend/ee/onyx/db/usage_export.py` | observability |
+| `backend/ee/onyx/server/analytics/`, `backend/ee/onyx/db/analytics.py`, `backend/ee/onyx/db/usage_export.py`, `backend/onyx/server/analytics/`, `backend/onyx/db/analytics.py`, `web/src/views/AgentStatsPage/`, `web/src/app/agents/`, `web/src/app/admin/performance/analytics/` | observability |
 | `backend/onyx/utils/audit.py`, `backend/ee/onyx/server/query_history/`, `backend/ee/onyx/db/query_history.py`, `backend/ee/onyx/server/reporting/`, `backend/ee/onyx/background/celery/tasks/usage_reporting/` | observability |
 | `backend/onyx/db/cost_override.py`, `backend/onyx/llm/cost_overrides.py` | observability, llm-providers |
 | `backend/onyx/utils/telemetry.py`, `backend/onyx/utils/timing.py`, `backend/ee/onyx/utils/telemetry.py`, `backend/ee/onyx/utils/posthog_client.py` | observability |
@@ -358,7 +358,7 @@ covers new files that match it.
 | `web/src/views/admin/SpendingLimitsPage/`, `web/src/lib/spendingLimits/`, `web/src/app/admin/spending-limits/`, `web/src/app/ee/admin/spending-limits/` | rate-and-usage-limits |
 | `web/src/app/admin/billing/`, `web/src/lib/billing/`, `web/src/components/GatedContentWrapper.tsx`, `web/src/sections/modals/DowngradeToCommunityModal.tsx`, `web/src/components/errorPages/AccessRestrictedPage.tsx`, `web/src/providers/ProductGatingWrapper.tsx`, `web/src/hooks/useLicense.ts`, `web/src/hooks/useBillingInformation.ts`, `web/src/hooks/useCloudSubscription.ts` | billing |
 | `web/src/proxy.ts`, `web/src/app/ee/layout.tsx`, `web/src/app/ee/EEFeatureRedirect.tsx` | editions-and-gating |
-| `web/src/app/admin/hooks/`, `web/src/ee/views/admin/HooksPage/`, `web/src/ee/hooks/` | hooks |
+| `web/src/app/admin/hooks/`, `web/src/ee/views/admin/HooksPage/`, `web/src/ee/hooks/`, `web/src/views/admin/HooksPage/`, `web/src/lib/hookExtensions/` | hooks |
 | `web/src/app/ee/admin/standard-answer/`, `web/src/components/standardAnswers/` | standard-answers |
 | `web/src/app/ee/admin/performance/`, `web/src/app/ee/admin/export-logs/`, `web/src/app/admin/tracing/`, `web/src/app/admin/systeminfo/`, `web/src/views/admin/TracingPage/`, `web/src/views/admin/WorkspaceAnalyticsPage/`, `web/src/views/admin/CostOverridesPanel.tsx`, `web/src/views/admin/PerUserUsagePanel.tsx`, `web/src/views/admin/SystemUsagePanel.tsx` | observability |
 | `web/src/sections/usage/`, `web/src/lib/usage/`, `web/src/lib/tracing/` | observability |

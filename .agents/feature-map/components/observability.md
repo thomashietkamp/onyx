@@ -6,7 +6,11 @@
 
 **Verified against:** `6bac4e012f` (2026-10-29)
 **Edition:** CE for metrics, tracing, usage accounting and audit logging. EE
-for the usage report, log export, query history and workspace analytics.
+for the usage report, log export, query history and workspace analytics. This
+fork has workspace analytics and agent stats in MIT code
+(`backend/onyx/server/analytics/api.py`, `backend/onyx/db/analytics.py`). Each
+count groups by the UTC day of `ChatMessage.time_sent`; agent stats also need
+`can_view_persona_stats`.
 
 ---
 

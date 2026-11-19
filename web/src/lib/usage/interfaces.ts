@@ -27,3 +27,15 @@ export interface PersonaUniqueUserAnalytics {
   date: string;
   persona_id: number;
 }
+
+export interface AgentDailyStats {
+  date: string;
+  total_messages: number;
+  total_unique_users: number;
+}
+
+export interface AgentStats {
+  daily_stats: AgentDailyStats[];
+  total_messages: number;
+  total_unique_users: number;
+}
