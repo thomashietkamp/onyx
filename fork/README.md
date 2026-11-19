@@ -76,7 +76,13 @@ Requesty, Azure OpenAI and self-hosted models. See `fork/litellm/README.md`.
   minutes for each pair. None of the sources is tested against a live account.
 - The fork runs at the Enterprise tier (`backend/onyx/utils/tier.py`). Every
   user keeps the CE right to create agents (`add:agents`), also when their
-  groups do not grant it.
+  groups do not grant it. This is a deliberate choice for this fork.
+- GitLab runs on a self-managed server. Its Auto Sync needs an admin token
+  (scopes `read_api`, plus `admin_mode` when Admin Mode is on); without one,
+  only users with a public email get access.
+- Not yet tested against real systems: Requesty and Azure OpenAI through the
+  LiteLLM Proxy, SCIM from Entra ID, the permission sync of every source, and
+  GitLab. Each was tested with faked API responses only.
 - Document ACLs name Onyx groups by name (`group:<name>`). After a rename,
   another group that takes the old name matches the old ACLs until the
   document resync of the renamed group finishes.
